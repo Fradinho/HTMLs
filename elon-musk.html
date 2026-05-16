@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elon Musk — Complete Profile</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-light: #eff6ff;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --purple: #7c3aed;
+      --purple-light: #f5f3ff;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+    }
+
+    img { max-width: 100%; display: block; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+      color: #fff;
+      padding: 4rem 1rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 40%, rgba(37,99,235,.25) 0%, transparent 70%);
+    }
+    .hero-inner { position: relative; max-width: 720px; margin: auto; }
+    .hero-avatar {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 1.5rem;
+      border: 3px solid rgba(255,255,255,.2);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      line-height: 1.15;
+    }
+    .hero-tagline {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,.7);
+      margin: 0 0 1.5rem;
+    }
+    .hero-tags {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+    }
+    .hero-tag {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      padding: 0.25rem 0.875rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,.85);
+    }
+
+    /* ── Nav ── */
+    nav.sticky {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav.sticky ul {
+      display: flex; gap: 0;
+      list-style: none;
+      margin: 0; padding: 0;
+      width: max-content;
+      min-width: 100%;
+    }
+    nav.sticky ul li a {
+      display: block;
+      padding: 0.875rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    nav.sticky ul li a:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 720px; margin: 0 auto; padding: 0 1rem; }
+    section { padding: 3rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 1.5rem;
+      line-height: 1.2;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.5rem;
+      line-height: 1.3;
+    }
+    p { margin: 0 0 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── Stat cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+    }
+    .stat-card .label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* ── Info table ── */
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .info-table tr { border-bottom: 1px solid var(--border); }
+    .info-table tr:last-child { border-bottom: none; }
+    .info-table td {
+      padding: 0.625rem 0;
+      vertical-align: top;
+      font-size: 0.9rem;
+    }
+    .info-table td:first-child {
+      color: var(--text-muted);
+      width: 40%;
+      padding-right: 1rem;
+      font-weight: 500;
+    }
+
+    /* ── Timeline ── */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 0.4rem;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -1.625rem;
+      top: 0.35rem;
+      width: 0.75rem; height: 0.75rem;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .timeline-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+    .timeline-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+    .timeline-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+    .timeline-year {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+    .timeline-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.375rem; }
+    .timeline-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Company cards ── */
+    .company-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .company-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+    }
+    .company-card-header {
+      display: flex; align-items: center; gap: 0.875rem;
+      margin-bottom: 0.875rem;
+    }
+    .company-icon {
+      width: 2.75rem; height: 2.75rem;
+      border-radius: 0.5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .company-card .founded {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.125rem;
+    }
+    .company-card p { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+    .company-card .tag {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── Achievement list ── */
+    .achievement-list { list-style: none; margin: 0; padding: 0; }
+    .achievement-list li {
+      display: flex; gap: 0.875rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .achievement-list li:last-child { border-bottom: none; }
+    .ach-icon {
+      width: 2.25rem; height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .ach-text h3 { margin: 0 0 0.25rem; font-size: 0.95rem; }
+    .ach-text p { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Controversy cards ── */
+    .controversy-list { display: flex; flex-direction: column; gap: 1rem; }
+    .controversy-card {
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem 1.25rem 1.25rem 1rem;
+      border-left: 4px solid var(--red);
+      background: var(--red-light);
+    }
+    .controversy-card .year {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.375rem;
+    }
+    .controversy-card h3 { margin: 0 0 0.375rem; font-size: 0.975rem; }
+    .controversy-card p { font-size: 0.875rem; color: #7f1d1d; margin: 0; }
+
+    /* ── Opinion columns ── */
+    .opinion-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 500px) { .opinion-grid { grid-template-columns: 1fr; } }
+    .opinion-card {
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+    .opinion-card.pro { background: var(--green-light); border: 1px solid #bbf7d0; }
+    .opinion-card.con { background: var(--red-light); border: 1px solid #fecaca; }
+    .opinion-card h3 {
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .opinion-card ul {
+      margin: 0; padding-left: 1.25rem;
+      font-size: 0.875rem;
+    }
+    .opinion-card.pro ul { color: #14532d; }
+    .opinion-card.con ul { color: #7f1d1d; }
+    .opinion-card ul li { margin-bottom: 0.4rem; }
+
+    /* ── Quote ── */
+    .pullquote {
+      border-left: 4px solid var(--accent);
+      padding: 0.875rem 1.25rem;
+      margin: 2rem 0;
+      background: var(--accent-light);
+      border-radius: 0 0.5rem 0.5rem 0;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--text);
+    }
+    .pullquote cite {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      font-style: normal;
+      color: var(--text-muted);
+    }
+
+    /* ── Net worth chart visual ── */
+    .wealth-bar-wrap { margin: 1.5rem 0; }
+    .wealth-item { margin-bottom: 0.875rem; }
+    .wealth-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.85rem; margin-bottom: 0.3rem;
+    }
+    .wealth-label .name { font-weight: 600; }
+    .wealth-label .amt { color: var(--text-muted); }
+    .wealth-bar-bg {
+      background: var(--border);
+      border-radius: 999px; height: 0.5rem; overflow: hidden;
+    }
+    .wealth-bar-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      transition: width .4s ease;
+    }
+
+    /* ── Legacy section ── */
+    .legacy-card {
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+    }
+    .legacy-card h2 { color: #fff; margin-bottom: 1rem; }
+    .legacy-card p { color: rgba(255,255,255,.75); max-width: 540px; margin: 0 auto 1rem; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .company-grid { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── Section badges ── */
+    .section-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      background: var(--accent-light);
+      border-radius: 999px;
+      padding: 0.2rem 0.7rem;
+      margin-bottom: 0.6rem;
+    }
+
+    /* print */
+    @media print {
+      nav.sticky { display: none; }
+      .hero { background: #0f172a !important; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ HERO ══ -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-avatar" aria-hidden="true">🚀</div>
+      <h1>Elon Musk</h1>
+      <p class="hero-tagline">Entrepreneur · Inventor · CEO of Tesla &amp; SpaceX · Owner of X</p>
+      <div class="hero-tags">
+        <span class="hero-tag">Born 1971</span>
+        <span class="hero-tag">South African–American</span>
+        <span class="hero-tag">World's Richest Person (multiple times)</span>
+        <span class="hero-tag">~12 companies founded or led</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ STICKY NAV ══ -->
+  <nav class="sticky" aria-label="Page sections">
+    <ul>
+      <li><a href="#who">Who is He?</a></li>
+      <li><a href="#early-life">Early Life</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#companies">Companies</a></li>
+      <li><a href="#achievements">Achievements</a></li>
+      <li><a href="#controversies">Controversies</a></li>
+      <li><a href="#opinions">Public Opinion</a></li>
+      <li><a href="#wealth">Wealth</a></li>
+      <li><a href="#legacy">Legacy</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- ══ WHO IS HE ══ -->
+    <section id="who">
+      <div class="container">
+        <span class="section-badge">Overview</span>
+        <h2>Who is Elon Musk?</h2>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="value">~$200B+</span>
+            <div class="label">Peak net worth</div>
+          </div>
+          <div class="stat-card">
+            <span class="value">6</span>
+            <div class="label">Major companies led</div>
+          </div>
+          <div class="stat-card">
+            <span class="value">12</span>
+            <div class="label">Children</div>
+          </div>
+          <div class="stat-card">
+            <span class="value">#1</span>
+            <div class="label">World's richest (2021–22, 2024–25)</div>
+          </div>
+        </div>
+
+        <p>Elon Reeve Musk is a South African-born American entrepreneur, business magnate, and investor — arguably the most prominent and polarizing industrialist of the 21st century. He is best known for leading <strong>Tesla</strong> (electric vehicles), <strong>SpaceX</strong> (private rockets and space exploration), and <strong>X</strong> (formerly Twitter, the social media platform).</p>
+
+        <p>His stated ambitions are sweeping: accelerate humanity's transition to sustainable energy, make humanity a multi-planetary species by colonizing Mars, and develop artificial general intelligence safely (though his views on that last goal have evolved significantly). Supporters call him a visionary genius who single-handedly re-invented the car industry and commercial spaceflight. Critics call him an erratic billionaire who endangers workers, manipulates markets, and wields too much power over public discourse.</p>
+
+        <div class="pullquote">
+          "I think it's possible for ordinary people to choose to be extraordinary."
+          <cite>— Elon Musk</cite>
+        </div>
+
+        <table class="info-table" aria-label="Basic facts about Elon Musk">
+          <tr><td>Full name</td><td>Elon Reeve Musk</td></tr>
+          <tr><td>Born</td><td>June 28, 1971 — Pretoria, South Africa</td></tr>
+          <tr><td>Nationality</td><td>South African, Canadian, American</td></tr>
+          <tr><td>Education</td><td>BSc Economics &amp; BSc Physics, University of Pennsylvania (1997); Stanford PhD program (dropped out after 2 days)</td></tr>
+          <tr><td>Parents</td><td>Maye Musk (model/dietitian) &amp; Errol Musk (engineer/pilot)</td></tr>
+          <tr><td>Siblings</td><td>Kimbal Musk (businessman), Tosca Musk (filmmaker)</td></tr>
+          <tr><td>Children</td><td>12, with multiple partners (Justine Wilson, Grimes, Shivon Zilis)</td></tr>
+          <tr><td>Political leaning</td><td>Self-described "free speech absolutist"; formerly moderate; shifted toward libertarian-right; supported Donald Trump in 2024</td></tr>
+          <tr><td>Known for</td><td>Tesla, SpaceX, X (Twitter), Neuralink, The Boring Company, xAI</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══ EARLY LIFE ══ -->
+    <section id="early-life">
+      <div class="container">
+        <span class="section-badge">Background</span>
+        <h2>Early Life &amp; Education</h2>
+
+        <h3>Childhood in South Africa (1971–1988)</h3>
+        <p>Elon was born in Pretoria, South Africa. He was a voracious reader from a young age — reportedly finishing the entire local library and then moving on to the Encyclopædia Britannica by age nine. He taught himself computer programming at 12 and sold his first software (a video game called <em>Blastar</em>) to a magazine for $500.</p>
+        <p>His childhood was difficult. His parents divorced when he was 10. By his own account, he was bullied severely at school — at one point a group of boys threw him down a staircase and beat him until he was hospitalised. He has described his father, Errol Musk, as "a terrible human being" who was emotionally abusive. His relationship with his father has remained strained throughout his life.</p>
+
+        <h3>Moving to Canada &amp; the US (1988–1995)</h3>
+        <p>At 17, Musk moved to Canada (his mother is Canadian) partly to avoid mandatory service in the South African military, which he considered morally objectionable for its role in enforcing apartheid. He attended Queen's University in Ontario, then transferred to the <strong>University of Pennsylvania</strong>, where he earned two bachelor's degrees — one in economics from the Wharton School and one in physics.</p>
+        <p>In 1995 he was accepted into a PhD program in energy physics at <strong>Stanford University</strong>. He withdrew after just two days to pursue his entrepreneurial ambitions in Silicon Valley, famously saying he didn't want to miss the internet boom.</p>
+
+        <h3>Personality &amp; Formative Influences</h3>
+        <p>Musk has cited Isaac Asimov's <em>Foundation</em> series, Douglas Adams' <em>The Hitchhiker's Guide to the Galaxy</em>, and Nikola Tesla (the inventor, after whom his car company is named) as major influences. He has been open about having Asperger syndrome, which he disclosed publicly on <em>Saturday Night Live</em> in 2021. He describes himself as someone who thinks in first principles — questioning every assumption from the ground up — which underlies his unconventional engineering approaches.</p>
+      </div>
+    </section>
+
+    <!-- ══ TIMELINE ══ -->
+    <section id="timeline">
+      <div class="container">
+        <span class="section-badge">History</span>
+        <h2>Life &amp; Career Timeline</h2>
+
+        <div class="timeline" role="list">
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">1971</div>
+            <div class="timeline-title">Born in Pretoria, South Africa</div>
+            <p class="timeline-desc">June 28. His mother Maye is a Canadian-South African model and dietitian; his father Errol is an engineer.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">1983</div>
+            <div class="timeline-title">Sells first software at age 12</div>
+            <p class="timeline-desc">Creates a space-themed video game called <em>Blastar</em> in BASIC and sells the code to a South African computer magazine for approximately $500.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">1988–1992</div>
+            <div class="timeline-title">Moves to Canada; attends Queen's University</div>
+            <p class="timeline-desc">Emigrates to Canada to avoid mandatory South African military service. Studies at Queen's University, Ontario before transferring to University of Pennsylvania.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">1995</div>
+            <div class="timeline-title">Drops out of Stanford; co-founds Zip2</div>
+            <p class="timeline-desc">Leaves a Stanford PhD program after two days. With brother Kimbal, founds Zip2 — a web-based city guide/software service for newspapers. Operated out of a tiny office, sleeping on a beanbag.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">1999</div>
+            <div class="timeline-title">Zip2 sold to Compaq for $307 million</div>
+            <p class="timeline-desc">Musk receives ~$22M from the sale. He immediately ploughs it into his next venture: X.com, an online financial services company.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2000–2002</div>
+            <div class="timeline-title">X.com merges to become PayPal; sold to eBay for $1.5B</div>
+            <p class="timeline-desc">X.com merges with competitor Confinity (which owned PayPal) in 2000. Musk is ousted as CEO during a boardroom coup while on his honeymoon. eBay acquires PayPal in 2002 for $1.5B — Musk's stake yields $175.8M.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2002</div>
+            <div class="timeline-title">Founds SpaceX</div>
+            <p class="timeline-desc">Space Exploration Technologies Corp. is founded with the goal of reducing space transportation costs and enabling Mars colonization. Musk invests $100M of his own money.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2004</div>
+            <div class="timeline-title">Joins Tesla as lead investor and chairman</div>
+            <p class="timeline-desc">Invests $6.35M in the Series A round of Tesla Motors (founded by Martin Eberhard and Marc Tarpenning). Leads the board and later takes over as CEO in 2008.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot amber"></div>
+            <div class="timeline-year">2008</div>
+            <div class="timeline-title">Near-bankruptcy for both Tesla and SpaceX</div>
+            <p class="timeline-desc">The global financial crisis hits. SpaceX's first three Falcon 1 launches fail. Tesla is running out of money. Musk is personally broke, borrowing money from friends. A fourth successful Falcon 1 launch saves SpaceX; a last-minute Tesla funding round saves the carmaker.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2010</div>
+            <div class="timeline-title">Tesla IPO; SpaceX becomes first private spacecraft to reach orbit &amp; return</div>
+            <p class="timeline-desc">Tesla goes public raising $226M. SpaceX's Dragon capsule becomes the first privately developed spacecraft to reach orbit and return safely.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2012</div>
+            <div class="timeline-title">Dragon docks with ISS; Tesla Model S launches</div>
+            <p class="timeline-desc">SpaceX Dragon becomes the first commercial spacecraft to berth with the International Space Station. Tesla Model S receives Motor Trend's Car of the Year — the first ever for an electric vehicle.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2015</div>
+            <div class="timeline-title">Co-founds OpenAI</div>
+            <p class="timeline-desc">Musk and Sam Altman co-found OpenAI, a non-profit AI safety research lab. Musk pledges $1B. He departs the board in 2018, citing conflicts with Tesla's AI work.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2016</div>
+            <div class="timeline-title">Founds Neuralink &amp; The Boring Company; Tesla acquires SolarCity</div>
+            <p class="timeline-desc">Neuralink aims to develop brain-computer interfaces. The Boring Company proposes underground tunnels to ease urban traffic. Tesla acquires SolarCity (a company chaired by Musk and led by his cousins) in a controversial $2.6B deal that shareholders later challenged in court.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2017</div>
+            <div class="timeline-title">Falcon 9 first-stage landing becomes routine; Tesla Model 3 launch</div>
+            <p class="timeline-desc">SpaceX perfects rocket booster recovery and re-use, dramatically cutting launch costs. Tesla begins delivering the mass-market Model 3, though "production hell" follows.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot red"></div>
+            <div class="timeline-year">2018</div>
+            <div class="timeline-title">"Funding secured" tweet; SEC settlement</div>
+            <p class="timeline-desc">Musk tweets he has "funding secured" to take Tesla private at $420/share — no such funding existed. The SEC sues for securities fraud. Musk settles for $20M and agrees to have his tweets pre-screened. He briefly steps down as Tesla chairman.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2020</div>
+            <div class="timeline-title">SpaceX sends humans to ISS; Tesla enters S&amp;P 500</div>
+            <p class="timeline-desc">Crew Dragon Demo-2 carries NASA astronauts Bob Behnken and Doug Hurley to the ISS — the first crewed US orbital launch since the Space Shuttle retired in 2011. Tesla joins the S&amp;P 500 index. Musk briefly becomes the world's richest person.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2021</div>
+            <div class="timeline-title">Hosts SNL; Bitcoin volatility; Starlink expands</div>
+            <p class="timeline-desc">Musk hosts <em>Saturday Night Live</em>, publicly discloses Asperger's syndrome, and causes Bitcoin's price to crash when he suggests Tesla will no longer accept it as payment. SpaceX's Starlink satellite internet expands to multiple continents.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2022</div>
+            <div class="timeline-title">Acquires Twitter for $44 billion</div>
+            <p class="timeline-desc">After months of legal back-and-forth, Musk completes his $44B acquisition of Twitter in October. He immediately fires the CEO, CFO, and top executives, lays off ~50% of staff, reinstates banned accounts (including Donald Trump's), and introduces a paid verification system. The platform is eventually rebranded to <em>X</em>.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-year">2023</div>
+            <div class="timeline-title">Founds xAI; Starship test flights</div>
+            <p class="timeline-desc">Launches xAI, an AI company to develop the Grok chatbot (integrated into X). SpaceX conducts the first integrated Starship/Super Heavy test flights — the most powerful rocket ever flown.</p>
+          </div>
+
+          <div class="timeline-item" role="listitem">
+            <div class="timeline-dot amber"></div>
+            <div class="timeline-year">2024–2025</div>
+            <div class="timeline-title">Political pivot; DOGE; election influence</div>
+            <p class="timeline-desc">Musk becomes one of the largest donors to Donald Trump's 2024 presidential campaign, contributing over $270M. Following Trump's victory, Musk is appointed to lead DOGE (Department of Government Efficiency), an advisory body tasked with cutting federal spending. His political activities draw intense praise and condemnation alike.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ COMPANIES ══ -->
+    <section id="companies">
+      <div class="container">
+        <span class="section-badge">Ventures</span>
+        <h2>Companies &amp; Ventures</h2>
+
+        <div class="company-grid">
+
+          <article class="company-card">
+            <div class="company-card-header">
+              <div class="company-icon" style="background:#eff6ff;" aria-hidden="true">🚗</div>
+              <div>
+                <h3>Tesla</h3>
+                <div class="founded">CEO since 2008 · Founded 2003</div>
+              </div>
+            </div>
+            <p>Electric vehicles, energy storage (Powerwall/Megapack), solar panels (Solar Roof), and autonomous driving (Full Self-Driving). Transformed EVs from niche luxury curiosities into a mainstream global industry. As of 2024, Tesla is the world's most valuable automaker by market cap.</p>
+            <span class="tag" style="background:#dbeafe;color:#1e40af;">$TSLA · NASDAQ</span>
+          </article>
+
+          <article class="company-card">
+            <div class="company-card-header">
+              <div class="company-icon" style="background:#f0fdf4;" aria-hidden="true">🚀</div>
+              <div>
+                <h3>SpaceX</h3>
+                <div class="founded">Founder &amp; CEO · Founded 2002</div>
+              </div>
+            </div>
+            <p>Private aerospace manufacturer. Created the reusable Falcon 9 rocket (reducing launch cost by ~80%), Dragon crew capsule, and the Starlink satellite internet constellation (~7,000 satellites as of 2025). Developing Starship — the most powerful rocket ever built — for Mars missions.</p>
+            <span class="tag" style="background:#dcfce7;color:#15803d;">Privately held · Valued ~$350B</span>
+          </article>
+
+          <article class="company-card">
+            <div class="company-card-header">
+              <div class="company-icon" style="background:#faf5ff;" aria-hidden="true">🧠</div>
+              <div>
+                <h3>Neuralink</h3>
+                <div class="founded">Co-founder · Founded 2016</div>
+              </div>
+            </div>
+            <p>Brain-computer interface company. In 2024, implanted its first chip ("Telepathy") in a human patient — a paralyzed man who was subsequently able to control a computer cursor with his thoughts. Aims to treat neurological disorders and eventually enable human-AI "symbiosis."</p>
+            <span class="tag" style="background:#ede9fe;color:#6d28d9;">Biotech / Neuroscience</span>
+          </article>
+
+          <article class="company-card">
+            <div class="company-card-header">
+              <div class="company-icon" style="background:#fff7ed;" aria-hidden="true">🕳️</div>
+              <div>
+                <h3>The Boring Company</h3>
+                <div class="founded">Founder · Founded 2016</div>
+              </div>
+            </div>
+            <p>Infrastructure &amp; tunnel construction company. Built the Las Vegas Convention Center Loop — an underground electric vehicle transit system. Aims to build high-speed underground transit networks in major cities to bypass surface traffic.</p>
+            <span class="tag" style="background:#ffedd5;color:#c2410c;">Infrastructure</span>
+          </article>
+
+          <article class="company-card">
+            <div class="company-card-header">
+              <div class="company-icon" style="background:#f8fafc;" aria-hidden="true">𝕏</div>
+              <div>
+                <h3>X (formerly Twitter)</h3>
+                <div class="founded">Owner &amp; Executive Chairman · Acquired 2022</div>
+              </div>
+            </div>
+            <p>Social media platform with ~550M monthly active users. Acquired for $44B and rebranded to X. Musk rolled back content moderation policies, reinstated banned accounts, introduced paid verification, and restructured the company dramatically. Revenue fell significantly in early years post-acquisition.</p>
+            <span class="tag" style="background:#f1f5f9;color:#475569;">Social Media · Privately held</span>
+          </article>
+
+          <article class="company-card">
+            <div class="company-card-header">
+              <div class="company-icon" style="background:#fdf4ff;" aria-hidden="true">🤖</div>
+              <div>
+                <h3>xAI</h3>
+                <div class="founded">Founder &amp; CEO · Founded 2023</div>
+              </div>
+            </div>
+            <p>Artificial intelligence company. Developed Grok, an AI chatbot with a "rebellious streak," integrated into X. xAI raised $6B in 2024 at a ~$24B valuation and is building one of the world's largest GPU clusters to train frontier AI models.</p>
+            <span class="tag" style="background:#fae8ff;color:#86198f;">AI / Machine Learning</span>
+          </article>
+
+        </div>
+
+        <div style="margin-top:1.5rem; padding:1rem; background:var(--surface); border:1px solid var(--border); border-radius:.75rem;">
+          <h3 style="margin-bottom:.5rem;">Earlier ventures</h3>
+          <p style="font-size:.875rem; color:var(--text-muted); margin:0;"><strong>Zip2</strong> (1995–1999) — City guide/web software for newspapers. Sold to Compaq for $307M. &nbsp;|&nbsp; <strong>X.com / PayPal</strong> (1999–2002) — Online payments. Became PayPal, sold to eBay for $1.5B. &nbsp;|&nbsp; <strong>OpenAI</strong> (2015–2018) — Co-founded and pledged $1B; departed board citing conflicts of interest.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ ACHIEVEMENTS ══ -->
+    <section id="achievements">
+      <div class="container">
+        <span class="section-badge">Milestones</span>
+        <h2>Key Achievements</h2>
+
+        <ul class="achievement-list">
+          <li>
+            <div class="ach-icon" aria-hidden="true">🛸</div>
+            <div class="ach-text">
+              <h3>First privately funded liquid-fueled rocket to reach orbit</h3>
+              <p>The Falcon 1 became the first such rocket in history (September 2008), proving commercial spaceflight was viable.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">🔄</div>
+            <div class="ach-text">
+              <h3>Pioneered reusable orbital rocket boosters</h3>
+              <p>Falcon 9's first-stage landing (December 2015) was a watershed moment. Boosters are now routinely recovered and re-flown up to 20+ times, cutting launch costs dramatically and accelerating the commercial space industry.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">👨‍🚀</div>
+            <div class="ach-text">
+              <h3>Restored US human spaceflight capability</h3>
+              <p>After the Space Shuttle retired in 2011, the US had no domestic crewed launch capability for 9 years. SpaceX's Crew Dragon restored it in 2020, ending US dependence on Russian Soyuz rockets for ISS access.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">🌐</div>
+            <div class="ach-text">
+              <h3>Starlink — global broadband from orbit</h3>
+              <p>SpaceX operates the world's largest satellite constellation (~7,000 satellites as of 2025), providing internet access to remote and underserved areas in over 100 countries, including active conflict zones.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">⚡</div>
+            <div class="ach-text">
+              <h3>Mainstreamed electric vehicles</h3>
+              <p>Tesla's Model S (2012), Model 3 (2017), and subsequent lineup proved EVs could be desirable, high-performance cars — not just eco-compromises. Tesla's success forced every major automaker to accelerate EV programs.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">🏦</div>
+            <div class="ach-text">
+              <h3>World's wealthiest person (multiple times)</h3>
+              <p>Musk's net worth peaked above $340B in late 2024, making him the wealthiest individual ever recorded in history by nominal terms — surpassing Jeff Bezos, Bernard Arnault, and Bill Gates.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">🧬</div>
+            <div class="ach-text">
+              <h3>First human brain chip implant (Neuralink)</h3>
+              <p>In January 2024, Neuralink implanted its N1 chip in a paralyzed patient who subsequently demonstrated the ability to control a computer cursor through thought alone, opening a new era in brain-computer interfaces.</p>
+            </div>
+          </li>
+          <li>
+            <div class="ach-icon" aria-hidden="true">🏗️</div>
+            <div class="ach-text">
+              <h3>Starship — largest rocket ever flown</h3>
+              <p>SpaceX's Starship/Super Heavy system, first fully integrated test-flown in 2023, is the most powerful launch vehicle in history with ~16.7 million pounds of thrust — nearly double the Saturn V that took humans to the Moon.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══ CONTROVERSIES ══ -->
+    <section id="controversies">
+      <div class="container">
+        <span class="section-badge">Controversies</span>
+        <h2>Major Controversies</h2>
+        <p style="color:var(--text-muted); margin-bottom:1.5rem;">Musk has generated controversy across nearly every domain — markets, labor, speech, politics, and personal conduct.</p>
+
+        <div class="controversy-list">
+
+          <article class="controversy-card">
+            <div class="year">2018</div>
+            <h3>"Funding Secured" Tweet &amp; SEC Fraud Charge</h3>
+            <p>Musk tweeted that he had "funding secured" to take Tesla private at $420/share. No such funding existed. The SEC charged him with securities fraud. He settled for $20M, agreed to have tweets screened by Tesla's legal team, and resigned as chairman (while remaining CEO). He later tried to invalidate the settlement, calling SEC oversight an unconstitutional infringement on speech.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2018</div>
+            <h3>Thailand Cave Rescue Insult</h3>
+            <p>When a British cave diver involved in rescuing boys trapped in a Thai cave criticized Musk's proposed submarine rescue device as a publicity stunt, Musk called him a "pedo guy" on Twitter. Musk was sued for defamation and acquitted at trial, but the episode widely damaged his reputation.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2018–ongoing</div>
+            <h3>Tesla Labor Practices &amp; NLRB Violations</h3>
+            <p>Tesla has faced repeated National Labor Relations Board findings and rulings over illegally suppressing unionization efforts, including firing workers who attempted to organize. A 2023 NLRB judge ruled Tesla violated labor law. Musk has been openly hostile to unions throughout.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2020</div>
+            <h3>COVID-19 Dismissal &amp; Factory Defiance</h3>
+            <p>Musk called COVID-19 fears "dumb" and publicly dismissed the severity of the pandemic. He defied Alameda County public health orders to keep Tesla's Fremont factory open, reportedly threatening to move Tesla's headquarters to Texas or Nevada. He won a legal standoff with local officials.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2022</div>
+            <h3>Twitter / X Acquisition Chaos</h3>
+            <p>Musk acquired Twitter for $44B, then immediately fired half the staff without warning, cut trust and safety teams, reinstated thousands of previously banned accounts (including those tied to hate speech and misinformation), and introduced chaotic product changes. Advertisers fled en masse; revenue dropped sharply. Former employees filed class-action lawsuits over unpaid severance.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2022–2023</div>
+            <h3>Ukraine–Russia War Statements</h3>
+            <p>Musk proposed a peace deal echoing Russian demands — including a referendum in occupied territories and Ukrainian neutrality — which was widely condemned by Ukrainian officials and Western allies. He also briefly restricted Starlink access in Crimea to prevent a Ukrainian drone submarine attack on Russian naval vessels, citing fears of nuclear escalation, a decision that drew both praise and intense criticism.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2023–2024</div>
+            <h3>Platform Amplification of Extremism</h3>
+            <p>Under Musk's ownership, independent researchers documented a significant rise in hate speech, antisemitic content, and far-right extremist accounts on X. Musk himself was criticized for amplifying conspiracy theories, posting antisemitic remarks (for which he later apologized), and engaging with white nationalist accounts. Multiple major brands suspended advertising.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">2024–2025</div>
+            <h3>DOGE &amp; Government Role</h3>
+            <p>As head of the unofficial "Department of Government Efficiency" under the Trump administration, Musk and his team moved to slash federal spending — cutting agencies, firing thousands of workers, and attempting to access sensitive government databases. Critics — including congressional members and civil servants — challenged the legality and scope of his authority. Courts issued multiple rulings limiting DOGE's actions.</p>
+          </article>
+
+          <article class="controversy-card">
+            <div class="year">Ongoing</div>
+            <h3>Personal Conduct &amp; Social Media Behavior</h3>
+            <p>Musk has repeatedly used his enormous platform to mock individuals, spread unverified claims, move cryptocurrency prices with casual posts, and engage in personal feuds. He has been criticized for erratic management styles at multiple companies and for a pattern of over-promising product timelines (Full Self-Driving, Tesla Semi, Cybertruck, Roadster 2.0) by years or more.</p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PUBLIC OPINION ══ -->
+    <section id="opinions">
+      <div class="container">
+        <span class="section-badge">Public Perception</span>
+        <h2>Public Opinion</h2>
+
+        <p>Musk may be the most polarizing public figure in the world of business. Polls consistently show he evokes strong reactions in both directions, with opinions often shifting based on political identity more than any single event.</p>
+
+        <div class="opinion-grid" style="margin:1.5rem 0;">
+          <div class="opinion-card pro">
+            <h3>👍 Supporters say…</h3>
+            <ul>
+              <li>He's a once-in-a-generation entrepreneur who actually ships world-changing technology</li>
+              <li>SpaceX saved American spaceflight and dramatically cut launch costs</li>
+              <li>Tesla forced the entire auto industry to take EVs seriously</li>
+              <li>He funds his own moonshots rather than relying on government grants</li>
+              <li>He's a free speech champion willing to take on tech censorship</li>
+              <li>He's honest to a fault — brutally direct and unfiltered</li>
+              <li>Starlink has provided internet to war zones and rural areas</li>
+            </ul>
+          </div>
+          <div class="opinion-card con">
+            <h3>👎 Critics say…</h3>
+            <ul>
+              <li>He's an erratic, impulsive leader whose posts move markets irresponsibly</li>
+              <li>Worker safety and labor rights records at Tesla &amp; SpaceX are poor</li>
+              <li>His "free speech" stance selectively amplifies extremism</li>
+              <li>He wields disproportionate political power without democratic accountability</li>
+              <li>Many of his promises (FSD, Robotaxi, Cybertruck timeline) were years late or never delivered</li>
+              <li>His wealth was largely built on government subsidies and contracts</li>
+              <li>Conflicts of interest in DOGE role are unprecedented and dangerous</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Polling &amp; Ratings</h3>
+        <p>A 2023 Pew Research Center survey found Musk's favorability had become sharply partisan in the US: viewed favorably by a large majority of Republicans but unfavorably by a majority of Democrats — a shift from 2021 when his ratings were more balanced. Internationally, opinions are similarly split: he is admired in many countries for SpaceX and Tesla, but his political interventions in the UK, Germany, and other democracies (via X posts) have generated significant backlash from governments and civil society.</p>
+
+        <div class="pullquote">
+          "Whether you love him or hate him, Elon Musk has changed multiple industries that were considered impossible to disrupt. The debate is about the cost."
+          <cite>— Common framing in business press coverage</cite>
+        </div>
+
+        <h3>Notable People Who've Weighed In</h3>
+        <p style="font-size:.9rem; color:var(--text-muted);">
+          <strong>Bill Gates</strong> — Has clashed with Musk publicly; criticized his Twitter acquisition and dismissed some of his AI fears as overblown, while acknowledging Tesla's impact on EVs.<br><br>
+          <strong>Jeff Bezos</strong> — Long-running rivalry in the space industry (Blue Origin vs SpaceX); publicly cordial but commercially adversarial.<br><br>
+          <strong>Warren Buffett</strong> — Has avoided commenting directly on Musk but has repeatedly said he would never short Tesla stock because "you never bet against Elon."<br><br>
+          <strong>Ukrainian President Zelensky</strong> — Initially praised Musk for Starlink access; later sharply criticized him over peace plan proposals and Crimea Starlink restrictions, calling it deeply troubling.<br><br>
+          <strong>Sam Altman (OpenAI)</strong> — Acrimonious split after Musk departed OpenAI's board; Musk has publicly accused OpenAI of betraying its non-profit mission; OpenAI countersued, releasing emails suggesting Musk previously supported the for-profit pivot.
+        </p>
+      </div>
+    </section>
+
+    <!-- ══ WEALTH ══ -->
+    <section id="wealth">
+      <div class="container">
+        <span class="section-badge">Finance</span>
+        <h2>Wealth &amp; Economic Impact</h2>
+
+        <p>Musk's net worth is primarily tied to his equity stakes in Tesla and SpaceX. It is extraordinarily volatile — swinging by tens of billions in a single day depending on Tesla's stock price. He has also taken on massive debt using Tesla shares as collateral to fund the Twitter acquisition.</p>
+
+        <h3>Approximate Net Worth Over Time</h3>
+        <div class="wealth-bar-wrap">
+          <div class="wealth-item">
+            <div class="wealth-label"><span class="name">2012</span><span class="amt">~$2B</span></div>
+            <div class="wealth-bar-bg"><div class="wealth-bar-fill" style="width:0.6%"></div></div>
+          </div>
+          <div class="wealth-item">
+            <div class="wealth-label"><span class="name">2016</span><span class="amt">~$10B</span></div>
+            <div class="wealth-bar-bg"><div class="wealth-bar-fill" style="width:3%"></div></div>
+          </div>
+          <div class="wealth-item">
+            <div class="wealth-label"><span class="name">2020</span><span class="amt">~$25B → $160B (year-end)</span></div>
+            <div class="wealth-bar-bg"><div class="wealth-bar-fill" style="width:47%"></div></div>
+          </div>
+          <div class="wealth-item">
+            <div class="wealth-label"><span class="name">2021 (peak)</span><span class="amt">~$300B</span></div>
+            <div class="wealth-bar-bg"><div class="wealth-bar-fill" style="width:88%"></div></div>
+          </div>
+          <div class="wealth-item">
+            <div class="wealth-label"><span class="name">2022 (Twitter acquisition + market drop)</span><span class="amt">~$137B (fell sharply)</span></div>
+            <div class="wealth-bar-bg"><div class="wealth-bar-fill" style="width:40%"></div></div>
+          </div>
+          <div class="wealth-item">
+            <div class="wealth-label"><span class="name">2024 (peak)</span><span class="amt">~$340B (all-time high)</span></div>
+            <div class="wealth-bar-bg"><div class="wealth-bar-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+
+        <p style="font-size:.85rem;color:var(--text-muted);">His fortune is so large that in the span of a single year (2021), Musk added more wealth than many countries' entire GDP. The volatility is equally extreme — he lost more money in a single year (2022: ~$182B) than any individual in recorded history.</p>
+
+        <h3>Government Subsidies &amp; Contracts</h3>
+        <p>A frequently raised counterpoint to the "self-made" narrative: Tesla and SpaceX have received billions in government support. NASA awarded SpaceX billions in contracts that sustained it during its early years. Tesla has benefited from federal EV tax credits, state-level manufacturing incentives, and carbon credit sales. Musk disputes characterizations of this as "subsidies," noting his companies earned those contracts competitively and that every energy and aerospace company receives similar treatment.</p>
+      </div>
+    </section>
+
+    <!-- ══ LEGACY ══ -->
+    <section id="legacy">
+      <div class="container">
+        <span class="section-badge">Significance</span>
+        <h2>Legacy &amp; Significance</h2>
+
+        <p>Whatever history's final verdict on Elon Musk, his impact on several industries is beyond dispute. He inherited no industry; he entered spaces (automotive, aerospace, solar, payments) that were dominated by entrenched incumbents and reshaped them through sheer force of capital, engineering ambition, and tolerance for failure.</p>
+
+        <p>The harder questions surround his methods, motives, and the concentration of power. No private individual in history has simultaneously controlled a communications platform used by hundreds of millions of people, a satellite internet constellation, the dominant electric vehicle brand, the world's leading private launch provider, and an advisory role inside a superpower's government. Whether that represents visionary entrepreneurship or a dangerous concentration of private power is the defining debate about Musk's legacy.</p>
+
+        <h3>How He's Likely to Be Remembered</h3>
+        <p>Most historians of technology will credit him with:</p>
+        <ul style="font-size:.9rem; color:var(--text-muted); padding-left:1.5rem;">
+          <li>Making reusable rockets economically viable — permanently lowering the cost of access to space</li>
+          <li>Cracking the mainstream electric vehicle market ahead of every incumbent automaker</li>
+          <li>Demonstrating that ambitious private capital can do what government programs could not or would not</li>
+        </ul>
+        <p>They will also grapple with:</p>
+        <ul style="font-size:.9rem; color:var(--text-muted); padding-left:1.5rem;">
+          <li>His outsized and arguably unaccountable political influence</li>
+          <li>Labor and governance concerns at his companies</li>
+          <li>Whether the promise of Mars colonization is realistic or an elaborate distraction</li>
+        </ul>
+
+        <div class="legacy-card" style="margin-top:2rem;">
+          <h2 style="font-size:1.4rem;">The Bottom Line</h2>
+          <p>Elon Musk is simultaneously the most consequential entrepreneur since Steve Jobs and one of the most controversial public figures alive. He has reshaped entire industries, altered the trajectory of the space age, and inserted himself into global politics in ways no businessperson has before. Whether you see him as a visionary hero or a reckless megalomaniac likely says as much about your values as it does about him.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Compiled for educational purposes · Information current as of May 2026 · Not affiliated with Elon Musk or any of his companies</p>
+    </div>
+  </footer>
+
+</body>
+</html>
