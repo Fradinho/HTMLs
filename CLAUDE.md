@@ -87,6 +87,17 @@ Every HTML file should follow this baseline structure:
 - **Lowercase:** All element names and attribute names in lowercase
 - **Boolean attributes:** Write without value (`<input disabled>` not `<input disabled="disabled">`)
 
+### Mobile Friendliness
+
+Every HTML file must be mobile-friendly by default:
+
+- Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">` in `<head>`
+- Use fluid/relative units (`%`, `em`, `rem`, `vw`, `vh`) instead of fixed `px` widths for layout containers
+- Layouts must reflow gracefully on small screens — use CSS Flexbox or Grid; avoid fixed-width designs
+- Touch targets (buttons, links, inputs) must be at least 44×44 px
+- Use `<picture>` or `srcset` for images that should adapt to screen size
+- Test mental model: assume the primary user is on a phone; desktop is the enhancement
+
 ### Accessibility
 
 - Every `<img>` must have an `alt` attribute
@@ -131,6 +142,11 @@ Fix all errors; warnings should be reviewed and addressed where practical.
 - **Do not** omit `<!DOCTYPE html>` or the `lang` attribute on `<html>`
 - **Always** add `alt` text to images; use `alt=""` only for decorative images
 - **Always** keep the heading hierarchy intact
+- **Always** ensure every HTML file is mobile-friendly (see Mobile Friendliness section)
+- **Always** end every response that creates or modifies an HTML file with the absolute file path(s) so the user can open them directly, formatted as a code block, e.g.:
+  ```
+  📄 /home/user/HTMLs/index.html
+  ```
 - **Prefer** semantic elements over class-named `<div>` wrappers
 - **Prefer** relative paths for internal links and asset references
 - When adding new pages, update any navigation that links between pages
