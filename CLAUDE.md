@@ -143,10 +143,7 @@ Fix all errors; warnings should be reviewed and addressed where practical.
 - **Always** add `alt` text to images; use `alt=""` only for decorative images
 - **Always** keep the heading hierarchy intact
 - **Always** ensure every HTML file is mobile-friendly (see Mobile Friendliness section)
-- **Always** end every response that creates or modifies an HTML file with the absolute file path(s) so the user can open them directly, formatted as a code block, e.g.:
-  ```
-  📄 /home/user/HTMLs/index.html
-  ```
+- **Always** send every created or modified HTML file to the user using the `SendUserFile` tool at the end of the response, so they can download and open it directly in a browser without needing any server or internet connection
 - **Prefer** semantic elements over class-named `<div>` wrappers
 - **Prefer** relative paths for internal links and asset references
 - When adding new pages, update any navigation that links between pages
