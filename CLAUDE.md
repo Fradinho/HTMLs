@@ -136,6 +136,18 @@ Fix all errors; warnings should be reviewed and addressed where practical.
 - When adding new pages, update any navigation that links between pages
 - When modifying structure significantly, re-validate with a HTML validator
 
+## Claude Code Configuration
+
+Project settings live in `.claude/settings.json` and are committed to the repository so they apply to every session.
+
+### Active plugins
+
+| Plugin | Source | Purpose |
+|--------|--------|---------|
+| `frontend-design` | `builtin` | UI/UX design assistance for frontend work |
+
+The `frontend-design@builtin` plugin is enabled for all sessions in this repository. When working on HTML, CSS, or JS files, use its design capabilities for layout, component structure, and visual guidance.
+
 ## Notes
 
 - This repository was initialized on 2026-05-16.
