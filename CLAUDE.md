@@ -106,9 +106,46 @@ Every HTML file must be mobile-friendly by default:
 - Heading hierarchy must be sequential (`h1` → `h2` → `h3`; do not skip levels)
 - Interactive elements must be keyboard-reachable
 
+### Aesthetic Defaults
+
+Every HTML file must open looking polished without any additional prompting. Apply these defaults in the `<style>` block of every file:
+
+**Visual style:** Clean and minimal — generous whitespace, neutral palette, sharp typography. Never produce plain, unstyled browser-default output.
+
+**Color palette:**
+- Background: `#ffffff`
+- Surface (cards, panels): `#f8fafc`
+- Border: `#e2e8f0`
+- Primary text: `#0f172a`
+- Secondary text: `#64748b`
+- Accent: `#2563eb`
+- Accent hover: `#1d4ed8`
+
+**Typography:**
+- Font stack: `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
+- Base size: `1rem` / line-height `1.6`
+- Headings: heavier weight (`600`–`700`), tighter line-height (`1.2`–`1.3`), no default browser margin resets left unstyled
+- Body text: weight `400`, color `#0f172a`
+- Secondary/meta text: `#64748b`
+
+**Spacing & layout:**
+- Max content width: `720px` centered with `auto` margins and `1rem` horizontal padding
+- Sections separated by at least `2rem` vertical space
+- Consistent padding on cards/panels: `1.5rem`
+
+**Interactive elements:**
+- Buttons: solid accent background, white text, `0.5rem 1.25rem` padding, `0.375rem` border-radius, smooth `background-color` transition
+- Links: accent color, no underline by default, underline on hover
+- Inputs: `1px solid #e2e8f0` border, `0.375rem` border-radius, focus ring using accent color outline
+
+**General rules:**
+- Always reset `box-sizing: border-box` on `*`
+- Remove default `margin` from `body`; set a comfortable `padding` instead
+- Images: `max-width: 100%` and `display: block` by default
+
 ### CSS
 
-- Prefer external stylesheets linked via `<link>` over inline `style` attributes
+- Prefer external stylesheets linked via `<link>` over inline `style` attributes; for single-file HTML, use a `<style>` block in `<head>`
 - Inline styles are acceptable only for dynamic, JavaScript-driven values
 - Avoid `!important`; resolve specificity conflicts structurally
 
