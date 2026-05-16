@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Rookie — Cop Jargon Glossary</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --navy: #0d1b2a;
+      --blue: #1a2e44;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --white: #f4f4f4;
+      --grey: #8a9bb0;
+      --card-bg: #162032;
+      --border: #243550;
+    }
+
+    body {
+      background-color: var(--navy);
+      color: var(--white);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--blue);
+      border-bottom: 3px solid var(--gold);
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    .badge-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 8px rgba(201, 168, 76, 0.5));
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    header p {
+      color: var(--grey);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .intro {
+      background-color: var(--card-bg);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      color: var(--grey);
+    }
+
+    .glossary {
+      list-style: none;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .term-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      align-items: start;
+      transition: border-color 0.2s;
+    }
+
+    .term-card:hover {
+      border-color: var(--gold);
+    }
+
+    .term-number {
+      grid-row: 1 / 3;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold);
+      min-width: 2rem;
+      line-height: 1.3;
+    }
+
+    .term-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      line-height: 1.3;
+    }
+
+    .term-def {
+      color: var(--white);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .tag {
+      display: inline-block;
+      background-color: rgba(201, 168, 76, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.1em 0.45em;
+      margin-right: 0.4rem;
+      vertical-align: middle;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: var(--grey);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 480px) {
+      .term-card {
+        grid-template-columns: 1fr;
+      }
+
+      .term-number {
+        grid-row: auto;
+        font-size: 0.85rem;
+        color: var(--grey);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="badge-icon" aria-hidden="true">🔵</span>
+    <h1>The Rookie — Cop Jargon Glossary</h1>
+    <p>20 essential terms to follow the radio chatter without a police academy degree</p>
+  </header>
+
+  <main>
+    <p class="intro">
+      <em>The Rookie</em> drops you straight into LAPD life with zero translation.
+      Officers talk in codes, acronyms, and shorthand that fly by fast.
+      This glossary covers the 20 terms that come up most — bookmark it before your next episode.
+    </p>
+
+    <ol class="glossary" aria-label="Police jargon glossary">
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">01</span>
+        <p class="term-name"><span class="tag">Role</span> Rookie / Boot</p>
+        <p class="term-def">
+          A probationary officer in their first year on the job. "Boot" is the more dismissive
+          street version — rookies have to earn their spurs before veterans stop using it.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">02</span>
+        <p class="term-name"><span class="tag">Role</span> TO / FTO — Training Officer</p>
+        <p class="term-def">
+          The experienced officer paired with a rookie to supervise and evaluate them.
+          The TO can end a rookie's career with a bad evaluation, which is why this relationship
+          drives so much of the show's drama.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">03</span>
+        <p class="term-name"><span class="tag">Code</span> Code 3</p>
+        <p class="term-def">
+          Respond immediately with lights and sirens. When dispatch calls Code 3,
+          everyone buckles up — it means something serious is unfolding right now.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">04</span>
+        <p class="term-name"><span class="tag">Code</span> Code 4</p>
+        <p class="term-def">
+          Scene is secure; no further assistance needed. Officers radio Code 4 to let
+          dispatch know they've handled the situation and backup can stand down.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">05</span>
+        <p class="term-name"><span class="tag">Code</span> Code 7</p>
+        <p class="term-def">
+          Out of service for a meal break. Officers call Code 7 when they step away
+          to eat — one of the few moments of normal life you see in the show.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">06</span>
+        <p class="term-name"><span class="tag">Radio</span> 10-4</p>
+        <p class="term-def">
+          Message received and understood — the universal radio acknowledgement.
+          You'll hear this dozens of times per episode; it's the police version of "OK."
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">07</span>
+        <p class="term-name"><span class="tag">Acronym</span> EOW — End of Watch</p>
+        <p class="term-def">
+          The end of a shift — but also the solemn term used when an officer dies in
+          the line of duty. The final radio call for a fallen officer is their EOW.
+          The show's title card is a direct nod to this tradition.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">08</span>
+        <p class="term-name"><span class="tag">Acronym</span> BOLO — Be On the Look Out</p>
+        <p class="term-def">
+          A broadcast alert to all units describing a suspect or vehicle to watch for.
+          When dispatch puts out a BOLO, every officer on the street starts scanning.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">09</span>
+        <p class="term-name"><span class="tag">Acronym</span> APB — All Points Bulletin</p>
+        <p class="term-def">
+          A wider, formal alert broadcast beyond a single district — think region-wide
+          or state-wide notice. More serious than a BOLO and used for high-priority suspects.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">10</span>
+        <p class="term-name"><span class="tag">Slang</span> Perp — Perpetrator</p>
+        <p class="term-def">
+          The person who committed the crime. Officers use "perp" as shorthand instead
+          of "suspect" once they're fairly sure of guilt, though legally the two are different.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">11</span>
+        <p class="term-name"><span class="tag">Acronym</span> DB — Dead Body</p>
+        <p class="term-def">
+          Exactly what it sounds like. Officers radio in a "DB" when they discover
+          a body at a scene. Clinical and detached by design — emotional distance is a
+          coping mechanism.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">12</span>
+        <p class="term-name"><span class="tag">Acronym</span> DOA — Dead on Arrival</p>
+        <p class="term-def">
+          The victim was already dead before paramedics or officers arrived.
+          Used by dispatch and in initial scene reports to set expectations before anyone rolls up.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">13</span>
+        <p class="term-name"><span class="tag">Acronym</span> UC — Undercover</p>
+        <p class="term-def">
+          An officer operating in plain clothes without revealing their identity.
+          Going UC is high-risk and high-drama — the show uses it frequently for
+          sting operations and infiltrating criminal organizations.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">14</span>
+        <p class="term-name"><span class="tag">Legal</span> MO — Modus Operandi</p>
+        <p class="term-def">
+          Latin for "method of operation" — the specific pattern or technique a criminal
+          uses. Detectives look for a matching MO to link crimes to the same offender.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">15</span>
+        <p class="term-name"><span class="tag">Tactic</span> Felony Stop</p>
+        <p class="term-def">
+          A high-risk vehicle stop procedure used when officers believe the occupants are
+          armed or dangerous. Guns drawn, everyone exits with hands visible —
+          you've seen the choreography. Very different from a routine traffic stop.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">16</span>
+        <p class="term-name"><span class="tag">Shift</span> Watch</p>
+        <p class="term-def">
+          A patrol shift — morning watch, day watch, or night watch (also called "PM watch").
+          Officers say they're "on watch" the way most people say they're "at work."
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">17</span>
+        <p class="term-name"><span class="tag">Shift</span> Roll Call</p>
+        <p class="term-def">
+          The briefing at the start of every watch where the sergeant runs through
+          active BOLOs, neighborhood intelligence, and assignments.
+          Almost every episode opens with one — it's how the writers dump exposition naturally.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">18</span>
+        <p class="term-name"><span class="tag">Legal</span> Probable Cause</p>
+        <p class="term-def">
+          The legal threshold an officer must meet to make an arrest or conduct a search
+          without a warrant — more than a hunch, less than certainty.
+          Characters argue over whether they have it constantly.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">19</span>
+        <p class="term-name"><span class="tag">Legal</span> Miranda / Mirandize</p>
+        <p class="term-def">
+          Reading a suspect their constitutional rights upon arrest ("You have the right
+          to remain silent…"). To "Mirandize" someone is the verb form. Skipping this
+          step can get evidence thrown out in court — a plot point the show exploits often.
+        </p>
+      </li>
+
+      <li class="term-card">
+        <span class="term-number" aria-hidden="true">20</span>
+        <p class="term-name"><span class="tag">Hierarchy</span> The Brass</p>
+        <p class="term-def">
+          Senior officers and command staff — captains, commanders, chiefs.
+          "The brass" usually appears when the stakes get political or when someone's
+          career is on the line. They talk about policy; officers on the street talk
+          about survival.
+        </p>
+      </li>
+
+    </ol>
+  </main>
+
+  <footer>
+    <p>Unofficial fan reference &mdash; <em>The Rookie</em> &copy; ABC. No affiliation with the LAPD.</p>
+  </footer>
+
+</body>
+</html>
