@@ -1,334 +1,1111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How to Change DNS to Google on iOS</title>
+  <title>Change DNS to Google on iOS</title>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
+    /* ── Variables ─────────────────────────────────────────── */
+    :root {
+      --bg:          #0a0f1e;
+      --bg2:         #0f1729;
+      --surface:     rgba(255,255,255,0.04);
+      --surface2:    rgba(255,255,255,0.08);
+      --border:      rgba(255,255,255,0.10);
+      --border2:     rgba(255,255,255,0.18);
+      --text:        #e2e8f0;
+      --text2:       #94a3b8;
+      --accent:      #3b82f6;
+      --accent2:     #8b5cf6;
+      --accent-glow: rgba(59,130,246,0.35);
+      --green:       #22c55e;
+      --green-glow:  rgba(34,197,94,0.3);
+      --gold:        #f59e0b;
+      --radius:      0.75rem;
+      --transition:  0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    [data-theme="light"] {
+      --bg:          #f0f4ff;
+      --bg2:         #e8eeff;
+      --surface:     rgba(255,255,255,0.70);
+      --surface2:    rgba(255,255,255,0.90);
+      --border:      rgba(99,102,241,0.15);
+      --border2:     rgba(99,102,241,0.30);
+      --text:        #0f172a;
+      --text2:       #475569;
+      --accent-glow: rgba(59,130,246,0.20);
+      --green-glow:  rgba(34,197,94,0.20);
     }
 
+    /* ── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0;
-      padding: 2rem 1rem;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 1rem;
       line-height: 1.6;
-      color: #0f172a;
-      background: #ffffff;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+    }
+    img { max-width: 100%; display: block; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ── Animated background ───────────────────────────────── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.55;
+      will-change: transform;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+      top: -150px; left: -150px;
+      animation: drift1 18s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      animation: drift2 22s ease-in-out infinite alternate;
+    }
+    .orb-3 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+      top: 40%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: drift3 26s ease-in-out infinite alternate;
+    }
+    [data-theme="light"] .orb { opacity: 0.20; }
+    @keyframes drift1 { to { transform: translate(120px, 80px) scale(1.15); } }
+    @keyframes drift2 { to { transform: translate(-100px, -60px) scale(1.1); } }
+    @keyframes drift3 { to { transform: translate(-30%, -40%) scale(0.85); } }
+
+    /* ── Grid overlay ──────────────────────────────────────── */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    [data-theme="light"] .bg-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px);
     }
 
-    main {
-      max-width: 720px;
+    /* ── Layout ────────────────────────────────────────────── */
+    #app {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
       margin: 0 auto;
+      padding: 2rem 1rem 4rem;
     }
 
+    /* ── Theme toggle ──────────────────────────────────────── */
+    #theme-btn {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 100;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 50%;
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      backdrop-filter: blur(12px);
+      color: var(--text);
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    #theme-btn:hover { transform: scale(1.1) rotate(20deg); background: var(--surface2); }
+
+    /* ── Progress bar (sticky) ─────────────────────────────── */
+    .progress-bar-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 0.75rem 0;
+      backdrop-filter: blur(20px);
+      background: rgba(10,15,30,0.7);
+      border-bottom: 1px solid var(--border);
+      margin: 0 -1rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      transition: background var(--transition);
+    }
+    [data-theme="light"] .progress-bar-wrap {
+      background: rgba(240,244,255,0.85);
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+      font-size: 0.8125rem;
+      color: var(--text2);
+    }
+    .progress-meta strong { color: var(--accent); }
+    .progress-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 999px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* ── Hero header ───────────────────────────────────────── */
     header {
-      margin-bottom: 2.5rem;
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 1.5rem;
+      text-align: center;
+      padding: 3rem 0 2.5rem;
     }
-
-    header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      line-height: 1.2;
-      margin: 0 0 0.5rem;
-    }
-
-    header p {
-      color: #64748b;
-      margin: 0;
-    }
-
-    .dns-badge {
+    .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #2563eb;
-      font-size: 0.875rem;
-      font-weight: 600;
-      padding: 0.25rem 0.75rem;
+      background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15));
+      border: 1px solid rgba(99,102,241,0.35);
       border-radius: 999px;
+      padding: 0.35rem 1rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #a5b4fc;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      backdrop-filter: blur(8px);
+    }
+    .hero-badge .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green-glow);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+    h1 {
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #e2e8f0 0%, #a5b4fc 50%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    [data-theme="light"] h1 {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .shimmer-line {
+      display: block;
+      height: 2px;
+      width: 80px;
+      margin: 1rem auto;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+      border-radius: 999px;
+      animation: shimmer-slide 3s linear infinite;
+      background-size: 200% 100%;
+    }
+    @keyframes shimmer-slide {
+      0% { background-position: -100% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .hero-sub {
+      color: var(--text2);
+      font-size: 1.0625rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Glass card base ───────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(16px);
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px var(--border2);
+    }
+    [data-theme="light"] .card:hover {
+      box-shadow: 0 16px 40px rgba(59,130,246,0.12), 0 0 0 1px var(--border2);
+    }
+
+    /* ── DNS address panel ─────────────────────────────────── */
+    .dns-section { margin-bottom: 2.5rem; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text2);
       margin-bottom: 1rem;
     }
 
-    .dns-servers {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-      margin-bottom: 2.5rem;
+    /* Tab toggle */
+    .tab-strip {
+      display: inline-flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 1.25rem;
+      position: relative;
     }
-
-    .dns-servers h2 {
-      font-size: 1rem;
+    .tab-btn {
+      position: relative;
+      z-index: 1;
+      padding: 0.35rem 1.1rem;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-size: 0.875rem;
       font-weight: 600;
-      margin: 0 0 1rem;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      border-radius: 999px;
+      transition: color var(--transition);
+    }
+    .tab-btn.active { color: #fff; }
+    [data-theme="light"] .tab-btn.active { color: #fff; }
+    .tab-indicator {
+      position: absolute;
+      top: 4px; bottom: 4px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      transition: left var(--transition), width var(--transition);
+      box-shadow: 0 2px 12px var(--accent-glow);
     }
 
+    /* DNS address grid */
     .dns-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
-
-    .dns-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.375rem;
-      padding: 1rem 1.25rem;
-    }
-
-    .dns-item .label {
-      font-size: 0.75rem;
-      color: #64748b;
-      font-weight: 500;
-      margin-bottom: 0.25rem;
-    }
-
-    .dns-item .address {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: #2563eb;
-      font-family: 'Courier New', Courier, monospace;
-      letter-spacing: 0.02em;
-    }
-
-    h2.section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      line-height: 1.3;
-      margin: 0 0 1.25rem;
-    }
-
-    .steps {
-      list-style: none;
-      margin: 0 0 2.5rem;
-      padding: 0;
+    .dns-card {
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.5rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .dns-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .dns-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+    .dns-card .dns-type {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text2);
+    }
+    .dns-card .dns-addr {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: 'Courier New', monospace;
+      color: var(--accent);
+      text-shadow: 0 0 20px var(--accent-glow);
+      animation: glow-pulse 3s ease-in-out infinite;
+      word-break: break-all;
+    }
+    @keyframes glow-pulse {
+      0%, 100% { text-shadow: 0 0 10px var(--accent-glow); }
+      50% { text-shadow: 0 0 28px var(--accent-glow), 0 0 50px var(--accent-glow); }
+    }
+    .copy-btn {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.25rem;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      background: var(--surface2);
+      color: var(--text2);
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-glow); }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); background: var(--green-glow); }
+    .copy-icon { font-size: 0.9rem; transition: transform 0.2s; }
+    .copy-btn.copied .copy-icon { transform: scale(1.4); }
+
+    /* ── Steps ─────────────────────────────────────────────── */
+    .steps-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    h2.steps-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .reset-btn {
+      padding: 0.3rem 0.9rem;
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text2);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .reset-btn:hover { color: #f87171; border-color: #f87171; }
+    .reset-btn.shake {
+      animation: shake 0.4s ease;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
     }
 
-    .steps li {
+    .steps-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+
+    /* Step item */
+    .step-item {
       display: flex;
       gap: 1rem;
       align-items: flex-start;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 1.25rem;
+      backdrop-filter: blur(16px);
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(24px);
     }
+    .step-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.5s ease, transform 0.5s ease, box-shadow var(--transition), border-color var(--transition), background var(--transition);
+    }
+    .step-item:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); border-color: var(--border2); }
+    .step-item.done { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
+    .step-item.done:hover { box-shadow: 0 12px 32px rgba(34,197,94,0.15); }
 
-    .step-number {
+    /* Step number circle */
+    .step-num {
       flex-shrink: 0;
-      width: 2rem;
-      height: 2rem;
-      background: #2563eb;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 0.875rem;
+      width: 2.25rem;
+      height: 2.25rem;
       border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px var(--accent-glow);
     }
-
-    .step-content {
-      flex: 1;
+    .step-num::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: border-color 0.3s, transform 0.3s;
     }
-
-    .step-content strong {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
+    .step-item:hover .step-num::after { border-color: var(--accent); transform: scale(1.15); }
+    .step-item.done .step-num {
+      background: linear-gradient(135deg, var(--green), #16a34a);
+      box-shadow: 0 4px 14px var(--green-glow);
     }
+    .step-check { display: none; }
+    .step-item.done .step-num-val { display: none; }
+    .step-item.done .step-check { display: block; }
 
-    .step-content p {
-      margin: 0;
-      color: #0f172a;
+    /* Step body */
+    .step-body { flex: 1; min-width: 0; }
+    .step-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+      transition: color var(--transition);
     }
-
-    .step-content .path {
+    .step-item.done .step-title { color: var(--green); text-decoration: line-through; text-decoration-color: rgba(34,197,94,0.4); }
+    .step-desc { color: var(--text2); font-size: 0.9375rem; }
+    .step-item.done .step-desc { opacity: 0.6; }
+    .step-path {
       display: inline-block;
-      margin-top: 0.5rem;
-      font-size: 0.8125rem;
-      color: #64748b;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--text2);
+      background: var(--surface2);
+      border: 1px solid var(--border);
       border-radius: 0.25rem;
-      padding: 0.2rem 0.5rem;
-      font-family: 'Courier New', Courier, monospace;
+      padding: 0.15rem 0.5rem;
+      font-family: 'Courier New', monospace;
     }
 
-    .tip {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-left: 4px solid #16a34a;
-      border-radius: 0.375rem;
-      padding: 1rem 1.25rem;
-      margin-bottom: 2.5rem;
+    /* Why accordion */
+    .why-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 0.6rem;
+      padding: 0.2rem 0;
+      border: none;
+      background: transparent;
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+    .why-toggle:hover { opacity: 1; }
+    .why-toggle .chevron {
+      display: inline-block;
+      transition: transform 0.25s;
+      font-style: normal;
+    }
+    .why-toggle.open .chevron { transform: rotate(180deg); }
+    .why-panel {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .why-panel.open { max-height: 200px; }
+    .why-inner {
+      margin-top: 0.6rem;
+      padding: 0.75rem 1rem;
+      background: rgba(59,130,246,0.06);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 0.375rem 0.375rem 0;
+      font-size: 0.875rem;
+      color: var(--text2);
+      line-height: 1.55;
     }
 
-    .tip p {
-      margin: 0;
-      font-size: 0.9375rem;
+    /* ── Sidebar dots (desktop) ────────────────────────────── */
+    #sidebar {
+      position: fixed;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      align-items: center;
     }
-
-    .tip p strong {
-      color: #15803d;
+    .sidebar-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--border2);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
     }
-
-    .note {
-      background: #fefce8;
-      border: 1px solid #fde68a;
-      border-left: 4px solid #ca8a04;
-      border-radius: 0.375rem;
-      padding: 1rem 1.25rem;
-      margin-bottom: 2.5rem;
+    .sidebar-dot::after {
+      content: attr(data-label);
+      position: absolute;
+      right: 1.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text2);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      background: var(--surface2);
+      padding: 0.15rem 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid var(--border);
     }
+    .sidebar-dot:hover::after { opacity: 1; }
+    .sidebar-dot:hover { transform: scale(1.4); border-color: var(--accent); }
+    .sidebar-dot.done { background: var(--green); border-color: var(--green); box-shadow: 0 0 8px var(--green-glow); }
+    @media (max-width: 960px) { #sidebar { display: none; } }
 
-    .note p {
-      margin: 0;
-      font-size: 0.9375rem;
+    /* ── Callout cards ─────────────────────────────────────── */
+    .callout {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      border-left: 4px solid;
+      backdrop-filter: blur(16px);
     }
-
-    .note p strong {
-      color: #92400e;
+    .callout-tip {
+      background: rgba(34,197,94,0.07);
+      border-color: var(--green);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-left: 4px solid var(--green);
     }
+    .callout-note {
+      background: rgba(245,158,11,0.07);
+      border-color: var(--gold);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-left: 4px solid var(--gold);
+    }
+    .callout-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .callout-body { font-size: 0.9375rem; color: var(--text2); }
+    .callout-body strong { color: var(--text); font-weight: 700; }
 
+    /* ── Success banner ────────────────────────────────────── */
+    #success-banner {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(59,130,246,0.08));
+      border: 1px solid rgba(34,197,94,0.3);
+      margin-bottom: 2rem;
+      animation: banner-in 0.5s cubic-bezier(0.4,0,0.2,1);
+      backdrop-filter: blur(16px);
+    }
+    #success-banner.show { display: block; }
+    @keyframes banner-in {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .banner-emoji { font-size: 3rem; margin-bottom: 0.5rem; display: block; animation: pop 0.4s 0.2s both cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+    .banner-title { font-size: 1.5rem; font-weight: 800; color: var(--green); margin-bottom: 0.3rem; }
+    .banner-sub { color: var(--text2); }
+
+    /* ── Footer ────────────────────────────────────────────── */
     footer {
       margin-top: 3rem;
       padding-top: 1.5rem;
-      border-top: 1px solid #e2e8f0;
-      color: #64748b;
+      border-top: 1px solid var(--border);
+      color: var(--text2);
       font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .footer-mono { font-family: 'Courier New', monospace; color: var(--accent); }
+
+    /* ── Confetti canvas ───────────────────────────────────── */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
     }
 
-    @media (max-width: 480px) {
-      .dns-grid {
-        grid-template-columns: 1fr;
-      }
+    /* ── Reduced motion ────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+      .step-item { opacity: 1; transform: none; }
+    }
 
-      header h1 {
-        font-size: 1.4rem;
-      }
+    /* ── Mobile ────────────────────────────────────────────── */
+    @media (max-width: 520px) {
+      .dns-grid { grid-template-columns: 1fr; }
+      .dns-card .dns-addr { font-size: 1.2rem; }
+      footer { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <div class="dns-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-        iOS DNS Guide
+  <!-- Background -->
+  <div class="bg-canvas" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- Theme toggle -->
+  <button id="theme-btn" aria-label="Toggle light/dark mode" title="Toggle theme">🌙</button>
+
+  <div id="app">
+    <!-- Progress bar -->
+    <div class="progress-bar-wrap" role="status" aria-live="polite" aria-atomic="true">
+      <div class="progress-meta">
+        <span>Progress</span>
+        <strong id="progress-label">0 of 8 steps complete</strong>
       </div>
-      <h1>Change DNS to Google on iOS</h1>
-      <p>Speed up browsing and improve privacy by switching to Google's public DNS on your iPhone or iPad.</p>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <header>
+      <div class="hero-badge"><span class="dot"></span> Quick Setup Guide</div>
+      <h1>Change DNS to Google<br>on iOS</h1>
+      <span class="shimmer-line" aria-hidden="true"></span>
+      <p class="hero-sub">Switch to Google's fast, reliable public DNS — faster lookups, fewer outages.</p>
     </header>
 
-    <section aria-labelledby="dns-addresses">
-      <h2 class="section-title" id="dns-addresses">Google's DNS Addresses</h2>
-      <div class="dns-servers">
-        <h2>IPv4</h2>
-        <div class="dns-grid">
-          <div class="dns-item">
-            <div class="label">Primary</div>
-            <div class="address">8.8.8.8</div>
-          </div>
-          <div class="dns-item">
-            <div class="label">Secondary</div>
-            <div class="address">8.8.4.4</div>
-          </div>
+    <!-- DNS Addresses -->
+    <section class="dns-section" aria-labelledby="dns-heading">
+      <p class="section-label" id="dns-heading">Google's DNS addresses</p>
+
+      <div class="tab-strip" role="tablist" aria-label="IP version">
+        <div class="tab-indicator" id="tab-indicator"></div>
+        <button class="tab-btn active" id="tab-ipv4" role="tab" aria-selected="true" aria-controls="dns-panel">IPv4</button>
+        <button class="tab-btn"        id="tab-ipv6" role="tab" aria-selected="false" aria-controls="dns-panel">IPv6</button>
+      </div>
+
+      <div class="dns-grid" id="dns-panel" role="tabpanel">
+        <div class="dns-card">
+          <div class="dns-type">Primary</div>
+          <div class="dns-addr" id="addr-primary">8.8.8.8</div>
+          <button class="copy-btn" data-copy="8.8.8.8" aria-label="Copy primary DNS address">
+            <span class="copy-icon">📋</span> Copy
+          </button>
+        </div>
+        <div class="dns-card">
+          <div class="dns-type">Secondary</div>
+          <div class="dns-addr" id="addr-secondary">8.8.4.4</div>
+          <button class="copy-btn" data-copy="8.8.4.4" aria-label="Copy secondary DNS address">
+            <span class="copy-icon">📋</span> Copy
+          </button>
         </div>
       </div>
     </section>
 
+    <!-- Success banner -->
+    <div id="success-banner" role="alert">
+      <span class="banner-emoji">🎉</span>
+      <div class="banner-title">You're all set!</div>
+      <p class="banner-sub">Your iOS device will now use Google Public DNS. Enjoy faster, more reliable browsing.</p>
+    </div>
+
+    <!-- Steps -->
     <section aria-labelledby="steps-heading">
-      <h2 class="section-title" id="steps-heading">Step-by-Step Instructions</h2>
-      <ol class="steps">
-        <li>
-          <div class="step-number" aria-hidden="true">1</div>
-          <div class="step-content">
-            <strong>Open Settings</strong>
-            <p>Tap the <strong>Settings</strong> app on your home screen.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">2</div>
-          <div class="step-content">
-            <strong>Go to Wi-Fi</strong>
-            <p>Tap <strong>Wi-Fi</strong> to see your available networks.</p>
-            <span class="path">Settings → Wi-Fi</span>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">3</div>
-          <div class="step-content">
-            <strong>Open your network details</strong>
-            <p>Tap the <strong>ⓘ</strong> icon next to your connected Wi-Fi network.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">4</div>
-          <div class="step-content">
-            <strong>Scroll down to DNS</strong>
-            <p>Scroll down until you see the <strong>DNS</strong> section, then tap <strong>Configure DNS</strong>.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">5</div>
-          <div class="step-content">
-            <strong>Switch to Manual</strong>
-            <p>Select <strong>Manual</strong> at the top of the screen instead of Automatic.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">6</div>
-          <div class="step-content">
-            <strong>Remove existing servers</strong>
-            <p>Tap the red <strong>–</strong> button next to each existing DNS entry and tap <strong>Delete</strong> to remove them.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">7</div>
-          <div class="step-content">
-            <strong>Add Google's DNS servers</strong>
-            <p>Tap <strong>Add Server</strong> and enter <code>8.8.8.8</code>, then tap <strong>Add Server</strong> again and enter <code>8.8.4.4</code>.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-number" aria-hidden="true">8</div>
-          <div class="step-content">
-            <strong>Save</strong>
-            <p>Tap <strong>Save</strong> in the top-right corner. Your device will now use Google DNS.</p>
-          </div>
-        </li>
+      <div class="steps-header">
+        <h2 class="steps-title" id="steps-heading">Step-by-Step Instructions</h2>
+        <button class="reset-btn" id="reset-btn" aria-label="Reset all progress">Reset</button>
+      </div>
+
+      <ol class="steps-list" id="steps-list">
+        <!-- Steps injected by JS to avoid repetition -->
       </ol>
     </section>
 
-    <div class="tip" role="note">
-      <p><strong>Tip:</strong> These settings apply only to the selected Wi-Fi network. Repeat the steps for each network you use, or use a VPN or DNS profile for system-wide DNS changes.</p>
-    </div>
-
-    <div class="note" role="note">
-      <p><strong>Note:</strong> DNS settings are per Wi-Fi network on iOS. Cellular data uses your carrier's DNS and cannot be changed through Settings without a configuration profile.</p>
-    </div>
+    <!-- Callouts -->
+    <section aria-label="Tips and notes" style="margin-top:2rem">
+      <div class="callout callout-tip">
+        <span class="callout-icon" aria-hidden="true">💡</span>
+        <div class="callout-body">
+          <strong>Tip:</strong> These settings apply only to the selected Wi-Fi network.
+          Repeat for each network you use, or install a DNS configuration profile for system-wide changes.
+        </div>
+      </div>
+      <div class="callout callout-note">
+        <span class="callout-icon" aria-hidden="true">📡</span>
+        <div class="callout-body">
+          <strong>Cellular note:</strong> iOS cannot change DNS for mobile data through Settings.
+          That requires a signed configuration profile from your carrier or an MDM solution.
+        </div>
+      </div>
+    </section>
 
     <footer>
-      <p>Google Public DNS — <strong>8.8.8.8</strong> &amp; <strong>8.8.4.4</strong> — is free and does not require an account.</p>
+      <span>Google Public DNS — <span class="footer-mono">8.8.8.8</span> &amp; <span class="footer-mono">8.8.4.4</span></span>
+      <span>Free · No account needed</span>
     </footer>
-  </main>
+  </div>
+
+  <!-- Sidebar dots -->
+  <nav id="sidebar" aria-label="Step progress"></nav>
+
+  <script>
+    /* ── Step data ─────────────────────────────────────────── */
+    const STEPS = [
+      {
+        title: 'Open Settings',
+        desc: 'Tap the <strong>Settings</strong> app on your home screen.',
+        why: 'All iOS network configuration lives in Settings — it\'s the gateway for Wi-Fi, cellular, and VPN options.'
+      },
+      {
+        title: 'Go to Wi-Fi',
+        desc: 'Tap <strong>Wi-Fi</strong> to see your available networks.',
+        path: 'Settings → Wi-Fi',
+        why: 'DNS is configured per-network on iOS, so you first need to enter the Wi-Fi screen to pick the right network.'
+      },
+      {
+        title: 'Open network details',
+        desc: 'Tap the <strong>ⓘ</strong> icon to the right of your connected Wi-Fi network name.',
+        why: 'The info icon (ⓘ) opens detailed settings for that specific network, including IP assignment and DNS.'
+      },
+      {
+        title: 'Scroll to DNS',
+        desc: 'Scroll down until you see the <strong>DNS</strong> section, then tap <strong>Configure DNS</strong>.',
+        why: 'This section controls which DNS resolvers your device queries when turning a domain name into an IP address.'
+      },
+      {
+        title: 'Switch to Manual',
+        desc: 'Select <strong>Manual</strong> at the top instead of Automatic.',
+        why: 'Automatic mode uses DNS servers pushed by your router via DHCP. Switching to Manual lets you override them with Google\'s servers.'
+      },
+      {
+        title: 'Remove existing servers',
+        desc: 'Tap the red <strong>–</strong> beside each existing DNS entry, then tap <strong>Delete</strong>.',
+        why: 'Old entries (usually your router\'s IP) would take precedence or conflict with Google\'s servers if left in place.'
+      },
+      {
+        title: 'Add Google\'s servers',
+        desc: 'Tap <strong>Add Server</strong>, enter <code style="font-family:monospace;color:var(--accent)">8.8.8.8</code>, tap <strong>Add Server</strong> again, and enter <code style="font-family:monospace;color:var(--accent)">8.8.4.4</code>.',
+        why: '8.8.8.8 is the primary; 8.8.4.4 is the secondary fallback. Your device tries the primary first, then falls back automatically.'
+      },
+      {
+        title: 'Save',
+        desc: 'Tap <strong>Save</strong> in the top-right corner. Done — your device now uses Google DNS.',
+        why: 'iOS applies the new DNS configuration immediately to all new connections on this Wi-Fi network.'
+      }
+    ];
+
+    /* ── Build steps ───────────────────────────────────────── */
+    const list    = document.getElementById('steps-list');
+    const sidebar = document.getElementById('sidebar');
+
+    STEPS.forEach((s, i) => {
+      // List item
+      const li = document.createElement('li');
+      li.className = 'step-item card';
+      li.id = `step-${i}`;
+      li.setAttribute('role', 'checkbox');
+      li.setAttribute('aria-checked', 'false');
+      li.setAttribute('tabindex', '0');
+      li.setAttribute('aria-label', `Step ${i+1}: ${s.title}`);
+      li.style.transitionDelay = `${i * 80}ms`;
+
+      li.innerHTML = `
+        <div class="step-num" aria-hidden="true">
+          <span class="step-num-val">${i + 1}</span>
+          <span class="step-check">✓</span>
+        </div>
+        <div class="step-body">
+          <div class="step-title">${s.title}</div>
+          <div class="step-desc">${s.desc}</div>
+          ${s.path ? `<span class="step-path">${s.path}</span>` : ''}
+          <button class="why-toggle" aria-expanded="false" aria-controls="why-${i}">
+            Why? <i class="chevron" aria-hidden="true">▾</i>
+          </button>
+          <div class="why-panel" id="why-${i}" role="region">
+            <div class="why-inner">${s.why}</div>
+          </div>
+        </div>`;
+
+      list.appendChild(li);
+
+      // Sidebar dot
+      const dot = document.createElement('button');
+      dot.className = 'sidebar-dot';
+      dot.dataset.label = `Step ${i + 1}`;
+      dot.setAttribute('aria-label', `Jump to step ${i + 1}: ${s.title}`);
+      dot.dataset.target = `step-${i}`;
+      sidebar.appendChild(dot);
+    });
+
+    /* ── State ─────────────────────────────────────────────── */
+    const state = { done: new Set() };
+
+    function updateProgress() {
+      const n    = state.done.size;
+      const pct  = (n / STEPS.length) * 100;
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-label').textContent = `${n} of ${STEPS.length} steps complete`;
+
+      // Sidebar dots
+      document.querySelectorAll('.sidebar-dot').forEach((dot, i) => {
+        dot.classList.toggle('done', state.done.has(i));
+      });
+
+      // All done?
+      if (n === STEPS.length) {
+        document.getElementById('success-banner').classList.add('show');
+        launchConfetti();
+      } else {
+        document.getElementById('success-banner').classList.remove('show');
+      }
+    }
+
+    function toggleStep(i) {
+      const item = document.getElementById(`step-${i}`);
+      if (state.done.has(i)) {
+        state.done.delete(i);
+        item.classList.remove('done');
+        item.setAttribute('aria-checked', 'false');
+      } else {
+        state.done.add(i);
+        item.classList.add('done');
+        item.setAttribute('aria-checked', 'true');
+        // Bounce the circle
+        const num = item.querySelector('.step-num');
+        num.animate([
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.4)' },
+          { transform: 'scale(0.9)' },
+          { transform: 'scale(1)' }
+        ], { duration: 350, easing: 'ease' });
+      }
+      updateProgress();
+    }
+
+    // Step click / keyboard
+    document.querySelectorAll('.step-item').forEach((item, i) => {
+      item.addEventListener('click', e => {
+        if (e.target.closest('.why-toggle')) return;
+        toggleStep(i);
+      });
+      item.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleStep(i); }
+      });
+    });
+
+    /* ── Why accordion ─────────────────────────────────────── */
+    document.querySelectorAll('.why-toggle').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const open   = btn.classList.toggle('open');
+        const panel  = document.getElementById(btn.getAttribute('aria-controls'));
+        panel.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', open);
+      });
+    });
+
+    /* ── Reset ─────────────────────────────────────────────── */
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      state.done.clear();
+      document.querySelectorAll('.step-item').forEach(item => {
+        item.classList.remove('done');
+        item.setAttribute('aria-checked', 'false');
+      });
+      updateProgress();
+      const btn = document.getElementById('reset-btn');
+      btn.classList.add('shake');
+      btn.addEventListener('animationend', () => btn.classList.remove('shake'), { once: true });
+    });
+
+    /* ── Sidebar dot navigation ────────────────────────────── */
+    document.querySelectorAll('.sidebar-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        document.getElementById(dot.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    /* ── Intersection Observer (step reveals) ─────────────── */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.step-item').forEach(el => observer.observe(el));
+
+    /* ── Copy buttons ──────────────────────────────────────── */
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const addr = btn.dataset.copy;
+        try {
+          await navigator.clipboard.writeText(addr);
+        } catch {
+          // Fallback for non-secure contexts
+          const ta = document.createElement('textarea');
+          ta.value = addr; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        btn.classList.add('copied');
+        btn.querySelector('.copy-icon').textContent = '✅';
+        btn.innerHTML = btn.innerHTML.replace('Copy', 'Copied!');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.querySelector('.copy-icon').textContent = '📋';
+          btn.innerHTML = btn.innerHTML.replace('Copied!', 'Copy');
+        }, 2000);
+      });
+    });
+
+    /* ── IPv4 / IPv6 tabs ──────────────────────────────────── */
+    const DNS = {
+      v4: { primary: '8.8.8.8',                secondary: '8.8.4.4' },
+      v6: { primary: '2001:4860:4860::8888',    secondary: '2001:4860:4860::8844' }
+    };
+    const tabIpv4 = document.getElementById('tab-ipv4');
+    const tabIpv6 = document.getElementById('tab-ipv6');
+    const indicator = document.getElementById('tab-indicator');
+
+    function positionIndicator(btn) {
+      indicator.style.left  = btn.offsetLeft + 'px';
+      indicator.style.width = btn.offsetWidth + 'px';
+    }
+    positionIndicator(tabIpv4);
+
+    function switchTab(version) {
+      const isV4 = version === 'v4';
+      tabIpv4.classList.toggle('active', isV4);
+      tabIpv6.classList.toggle('active', !isV4);
+      tabIpv4.setAttribute('aria-selected', isV4);
+      tabIpv6.setAttribute('aria-selected', !isV4);
+      positionIndicator(isV4 ? tabIpv4 : tabIpv6);
+
+      const d = DNS[version];
+      const primary   = document.getElementById('addr-primary');
+      const secondary = document.getElementById('addr-secondary');
+      primary.style.opacity = '0';
+      secondary.style.opacity = '0';
+      setTimeout(() => {
+        primary.textContent = d.primary;
+        secondary.textContent = d.secondary;
+        document.querySelectorAll('.copy-btn')[0].dataset.copy = d.primary;
+        document.querySelectorAll('.copy-btn')[1].dataset.copy = d.secondary;
+        primary.style.opacity = '1';
+        secondary.style.opacity = '1';
+      }, 180);
+      primary.style.transition = 'opacity 0.18s';
+      secondary.style.transition = 'opacity 0.18s';
+    }
+    tabIpv4.addEventListener('click', () => switchTab('v4'));
+    tabIpv6.addEventListener('click', () => switchTab('v6'));
+
+    /* ── Theme toggle ──────────────────────────────────────── */
+    const themeBtn = document.getElementById('theme-btn');
+    let theme = localStorage.getItem('dns-guide-theme') || 'dark';
+
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      themeBtn.textContent = t === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('dns-guide-theme', t);
+    }
+    applyTheme(theme);
+
+    themeBtn.addEventListener('click', () => {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      applyTheme(theme);
+    });
+
+    /* ── Confetti ──────────────────────────────────────────── */
+    function launchConfetti() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx    = canvas.getContext('2d');
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors  = ['#3b82f6','#8b5cf6','#22c55e','#f59e0b','#ec4899','#06b6d4'];
+      const pieces  = Array.from({ length: 140 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height,
+        r: Math.random() * 7 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 4 + 2,
+        spin: Math.random() * 0.3 - 0.15,
+        angle: Math.random() * Math.PI * 2,
+        shape: Math.random() > 0.5 ? 'rect' : 'circle'
+      }));
+
+      let frame;
+      let elapsed = 0;
+      const MAX   = 200;
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.angle);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, 1 - elapsed / MAX);
+          if (p.shape === 'rect') {
+            ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+          } else {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1;
+          p.angle += p.spin;
+        });
+        elapsed++;
+        if (elapsed < MAX) {
+          frame = requestAnimationFrame(draw);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          cancelAnimationFrame(frame);
+        }
+      }
+      cancelAnimationFrame(frame);
+      elapsed = 0;
+      draw();
+    }
+
+    /* ── Init ──────────────────────────────────────────────── */
+    updateProgress();
+  </script>
 </body>
 </html>
