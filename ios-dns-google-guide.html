@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
   <title>Change DNS to Google on iOS</title>
+  <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%233b82f6'/%3E%3C/svg%3E">
   <style>
+    /* ── Houdini @property ─────────────────────────────────── */
+    @property --pulse        { syntax: '<number>'; inherits: false; initial-value: 0; }
+    @property --card-hue     { syntax: '<angle>';  inherits: false; initial-value: 220deg; }
+    @property --ring-fill    { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+
     /* ── Variables ─────────────────────────────────────────── */
     :root {
       --bg:          #0a0f1e;
@@ -23,6 +30,10 @@
       --gold:        #f59e0b;
       --radius:      0.75rem;
       --transition:  0.3s cubic-bezier(0.4,0,0.2,1);
+      --mx: 50%;
+      --my: 50%;
+      --tilt-x: 0deg;
+      --tilt-y: 0deg;
     }
     [data-theme="light"] {
       --bg:          #f0f4ff;
@@ -37,9 +48,9 @@
       --green-glow:  rgba(34,197,94,0.20);
     }
 
-    /* ── Reset ─────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; color-scheme: dark; }
+    [data-theme="light"] html, html[data-theme="light"] { color-scheme: light; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 1rem;
@@ -50,10 +61,12 @@
       overflow-x: hidden;
       transition: background var(--transition), color var(--transition);
     }
+    h1, h2, .step-title { text-wrap: balance; }
+    p, .step-desc { text-wrap: pretty; }
     img { max-width: 100%; display: block; }
     button { cursor: pointer; font-family: inherit; }
 
-    /* ── Animated background ───────────────────────────────── */
+    /* ── Background layers ─────────────────────────────────── */
     .bg-canvas {
       position: fixed;
       inset: 0;
@@ -67,7 +80,9 @@
       filter: blur(80px);
       opacity: 0.55;
       will-change: transform;
+      transition: opacity 0.8s ease;
     }
+    body.shader-on .orb { opacity: 0.15; }
     .orb-1 {
       width: 600px; height: 600px;
       background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
@@ -92,7 +107,19 @@
     @keyframes drift2 { to { transform: translate(-100px, -60px) scale(1.1); } }
     @keyframes drift3 { to { transform: translate(-30%, -40%) scale(0.85); } }
 
-    /* ── Grid overlay ──────────────────────────────────────── */
+    #hero-shader {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    body.shader-on #hero-shader { opacity: 0.85; }
+    [data-theme="light"] #hero-shader { mix-blend-mode: multiply; opacity: 0.35; }
+
     .bg-grid {
       position: fixed;
       inset: 0;
@@ -109,6 +136,19 @@
         linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px);
     }
 
+    /* CRT scanline filter wrapper (pro mode) */
+    body.pro-mode #hero-shader { filter: url(#crt-filter); }
+    body.pro-mode #app::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0,255,128,0.04) 0px, rgba(0,255,128,0.04) 1px, transparent 1px, transparent 3px);
+      z-index: 2;
+      animation: scanline-flicker 0.15s steps(2) infinite;
+    }
+    @keyframes scanline-flicker { to { opacity: 0.85; } }
+
     /* ── Layout ────────────────────────────────────────────── */
     #app {
       position: relative;
@@ -118,44 +158,48 @@
       padding: 2rem 1rem 4rem;
     }
 
-    /* ── Theme toggle ──────────────────────────────────────── */
-    #theme-btn {
+    /* ── Top control cluster ──────────────────────────────── */
+    .top-controls {
       position: fixed;
-      top: 1.25rem;
-      right: 1.25rem;
+      top: 1rem;
+      right: 1rem;
       z-index: 100;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .icon-btn {
       width: 2.75rem;
       height: 2.75rem;
+      min-width: 44px;
+      min-height: 44px;
       border-radius: 50%;
       border: 1px solid var(--border2);
       background: var(--surface2);
       backdrop-filter: blur(12px);
       color: var(--text);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: var(--transition);
+      transition: transform var(--transition), background var(--transition), border-color var(--transition);
       box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     }
-    #theme-btn:hover { transform: scale(1.1) rotate(20deg); background: var(--surface2); }
+    .icon-btn:hover { transform: scale(1.08); border-color: var(--accent); }
+    .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .icon-btn.muted { color: #f87171; }
+    #theme-btn:hover { transform: scale(1.1) rotate(20deg); }
 
     /* ── Progress bar (sticky) ─────────────────────────────── */
     .progress-bar-wrap {
       position: sticky;
       top: 0;
       z-index: 50;
-      padding: 0.75rem 0;
+      padding: 0.75rem 1rem;
       backdrop-filter: blur(20px);
-      background: rgba(10,15,30,0.7);
+      background: color-mix(in oklab, var(--bg) 70%, transparent);
       border-bottom: 1px solid var(--border);
       margin: 0 -1rem;
-      padding-left: 1rem;
-      padding-right: 1rem;
       transition: background var(--transition);
-    }
-    [data-theme="light"] .progress-bar-wrap {
-      background: rgba(240,244,255,0.85);
     }
     .progress-meta {
       display: flex;
@@ -164,6 +208,8 @@
       margin-bottom: 0.4rem;
       font-size: 0.8125rem;
       color: var(--text2);
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
     .progress-meta strong { color: var(--accent); }
     .progress-track {
@@ -181,10 +227,42 @@
       box-shadow: 0 0 10px var(--accent-glow);
     }
 
-    /* ── Hero header ───────────────────────────────────────── */
+    /* Diagnostic strip */
+    #diag-strip {
+      display: none;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+      font-size: 0.72rem;
+      font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
+      color: var(--text2);
+    }
+    #diag-strip.show { display: flex; }
+    .diag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.15rem 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+    }
+    .diag-chip .dot-mini {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green-glow);
+    }
+    .diag-chip.offline .dot-mini { background: #f87171; box-shadow: 0 0 5px rgba(248,113,113,0.5); }
+
+    /* ── Hero ──────────────────────────────────────────────── */
     header {
       text-align: center;
       padding: 3rem 0 2.5rem;
+      display: grid;
+      gap: 1rem;
+      justify-items: center;
     }
     .hero-badge {
       display: inline-flex;
@@ -199,7 +277,6 @@
       color: #a5b4fc;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      margin-bottom: 1.25rem;
       backdrop-filter: blur(8px);
     }
     .hero-badge .dot {
@@ -222,8 +299,6 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 0.75rem;
-      position: relative;
     }
     [data-theme="light"] h1 {
       background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
@@ -234,7 +309,6 @@
       display: block;
       height: 2px;
       width: 80px;
-      margin: 1rem auto;
       background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
       border-radius: 999px;
       animation: shimmer-slide 3s linear infinite;
@@ -248,7 +322,38 @@
       color: var(--text2);
       font-size: 1.0625rem;
       max-width: 480px;
-      margin: 0 auto;
+    }
+
+    /* ── iPhone mock SVG ───────────────────────────────────── */
+    .phone-wrap {
+      width: 100%;
+      max-width: 240px;
+      margin: 1rem auto 0;
+      perspective: 1200px;
+    }
+    .phone {
+      width: 100%;
+      height: auto;
+      transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+      transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
+      filter: drop-shadow(0 20px 35px rgba(0,0,0,0.45));
+    }
+    .phone .screen-bg { fill: #0a0f1e; }
+    [data-theme="light"] .phone .screen-bg { fill: #f1f5f9; }
+    .phone .screen { opacity: 0; transition: opacity 0.4s ease; }
+    .phone .screen.active { opacity: 1; }
+    .phone .row { fill: var(--surface2); }
+    .phone .row-hl { fill: rgba(59,130,246,0.4); stroke: var(--accent); stroke-width: 0.5; }
+    .phone .row-done { fill: rgba(34,197,94,0.35); }
+    .phone .label { fill: var(--text); font: 600 5px system-ui, sans-serif; }
+    .phone .label-dim { fill: var(--text2); font: 400 4px system-ui, sans-serif; }
+    .phone .label-accent { fill: var(--accent); font: 600 5px 'Courier New', monospace; }
+    .phone .finger {
+      offset-path: path("M 80 60 L 100 110 L 70 140 L 90 175");
+      offset-distance: 0%;
+      transition: offset-distance 0.7s cubic-bezier(0.5,0,0.5,1);
+      fill: var(--accent);
+      opacity: 0.8;
     }
 
     /* ── Glass card base ───────────────────────────────────── */
@@ -258,6 +363,20 @@
       border-radius: var(--radius);
       backdrop-filter: blur(16px);
       transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      position: relative;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(280px circle at var(--mx) var(--my), rgba(99,102,241,0.16), transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover::after { opacity: 1; }
     }
     .card:hover {
       transform: translateY(-3px);
@@ -277,8 +396,6 @@
       color: var(--text2);
       margin-bottom: 1rem;
     }
-
-    /* Tab toggle */
     .tab-strip {
       display: inline-flex;
       background: var(--surface);
@@ -291,7 +408,8 @@
     .tab-btn {
       position: relative;
       z-index: 1;
-      padding: 0.35rem 1.1rem;
+      padding: 0.45rem 1.1rem;
+      min-height: 44px;
       border: none;
       background: transparent;
       color: var(--text2);
@@ -301,7 +419,6 @@
       transition: color var(--transition);
     }
     .tab-btn.active { color: #fff; }
-    [data-theme="light"] .tab-btn.active { color: #fff; }
     .tab-indicator {
       position: absolute;
       top: 4px; bottom: 4px;
@@ -311,7 +428,6 @@
       box-shadow: 0 2px 12px var(--accent-glow);
     }
 
-    /* DNS address grid */
     .dns-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -353,10 +469,12 @@
       text-shadow: 0 0 20px var(--accent-glow);
       animation: glow-pulse 3s ease-in-out infinite;
       word-break: break-all;
+      user-select: all;
+      cursor: copy;
     }
     @keyframes glow-pulse {
       0%, 100% { text-shadow: 0 0 10px var(--accent-glow); }
-      50% { text-shadow: 0 0 28px var(--accent-glow), 0 0 50px var(--accent-glow); }
+      50%      { text-shadow: 0 0 28px var(--accent-glow), 0 0 50px var(--accent-glow); }
     }
     .copy-btn {
       align-self: flex-start;
@@ -364,7 +482,8 @@
       align-items: center;
       gap: 0.4rem;
       margin-top: 0.25rem;
-      padding: 0.3rem 0.75rem;
+      padding: 0.4rem 0.85rem;
+      min-height: 32px;
       border: 1px solid var(--border2);
       border-radius: 999px;
       background: var(--surface2);
@@ -377,6 +496,77 @@
     .copy-btn.copied { color: var(--green); border-color: var(--green); background: var(--green-glow); }
     .copy-icon { font-size: 0.9rem; transition: transform 0.2s; }
     .copy-btn.copied .copy-icon { transform: scale(1.4); }
+
+    /* Traceroute ASCII reveal */
+    .traceroute {
+      counter-reset: hop;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+      font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
+      font-size: 0.7rem;
+      color: var(--green);
+      margin-top: 0.4rem;
+      line-height: 1.4;
+    }
+    .traceroute.show { max-height: 120px; }
+    .traceroute .hop {
+      display: block;
+      counter-increment: hop;
+      opacity: 0;
+      animation: hop-in 0.3s forwards;
+    }
+    .traceroute.show .hop:nth-child(1) { animation-delay: 0.05s; }
+    .traceroute.show .hop:nth-child(2) { animation-delay: 0.20s; }
+    .traceroute.show .hop:nth-child(3) { animation-delay: 0.40s; }
+    .traceroute.show .hop:nth-child(4) { animation-delay: 0.65s; }
+    .traceroute.show .hop:nth-child(5) { animation-delay: 0.90s; }
+    .traceroute .hop::before {
+      content: counter(hop, decimal-leading-zero) "  ";
+      color: var(--text2);
+    }
+    @keyframes hop-in { to { opacity: 1; } }
+
+    /* ── Pro mode panel ───────────────────────────────────── */
+    #pro-panel {
+      display: none;
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      border: 1px dashed var(--accent);
+      background: color-mix(in oklab, var(--accent) 8%, transparent);
+      backdrop-filter: blur(16px);
+    }
+    body.pro-mode #pro-panel { display: block; animation: banner-in 0.5s ease; }
+    .pro-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.75rem;
+    }
+    .pro-title::before { content: '◆ '; color: var(--accent); }
+    .pro-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+    .pro-card {
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+    .pro-card .label { font-size: 0.7rem; color: var(--text2); margin-bottom: 0.2rem; }
+    .pro-card .value {
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.95rem;
+      cursor: copy;
+      user-select: all;
+    }
 
     /* ── Steps ─────────────────────────────────────────────── */
     .steps-header {
@@ -393,7 +583,8 @@
       color: var(--text);
     }
     .reset-btn {
-      padding: 0.3rem 0.9rem;
+      padding: 0.45rem 0.95rem;
+      min-height: 44px;
       border: 1px solid var(--border2);
       border-radius: 999px;
       background: transparent;
@@ -403,9 +594,7 @@
       transition: var(--transition);
     }
     .reset-btn:hover { color: #f87171; border-color: #f87171; }
-    .reset-btn.shake {
-      animation: shake 0.4s ease;
-    }
+    .reset-btn.shake { animation: shake 0.4s ease; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       20% { transform: translateX(-6px); }
@@ -416,7 +605,6 @@
 
     .steps-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
 
-    /* Step item */
     .step-item {
       display: flex;
       gap: 1rem;
@@ -430,6 +618,7 @@
       cursor: pointer;
       opacity: 0;
       transform: translateY(24px);
+      position: relative;
     }
     .step-item.visible {
       opacity: 1;
@@ -439,8 +628,8 @@
     .step-item:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); border-color: var(--border2); }
     .step-item.done { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
     .step-item.done:hover { box-shadow: 0 12px 32px rgba(34,197,94,0.15); }
+    .step-item.focused { box-shadow: 0 0 0 2px var(--accent), 0 12px 32px rgba(59,130,246,0.25); }
 
-    /* Step number circle */
     .step-num {
       flex-shrink: 0;
       width: 2.25rem;
@@ -474,7 +663,6 @@
     .step-item.done .step-num-val { display: none; }
     .step-item.done .step-check { display: block; }
 
-    /* Step body */
     .step-body { flex: 1; min-width: 0; }
     .step-title {
       font-weight: 700;
@@ -497,13 +685,13 @@
       font-family: 'Courier New', monospace;
     }
 
-    /* Why accordion */
     .why-toggle {
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
       margin-top: 0.6rem;
-      padding: 0.2rem 0;
+      padding: 0.3rem 0;
+      min-height: 32px;
       border: none;
       background: transparent;
       color: var(--accent);
@@ -513,11 +701,7 @@
       transition: opacity 0.2s;
     }
     .why-toggle:hover { opacity: 1; }
-    .why-toggle .chevron {
-      display: inline-block;
-      transition: transform 0.25s;
-      font-style: normal;
-    }
+    .why-toggle .chevron { display: inline-block; transition: transform 0.25s; font-style: normal; }
     .why-toggle.open .chevron { transform: rotate(180deg); }
     .why-panel {
       max-height: 0;
@@ -536,7 +720,22 @@
       line-height: 1.55;
     }
 
-    /* ── Sidebar dots (desktop) ────────────────────────────── */
+    /* Scroll-driven number scale (progressive enhancement) */
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) {
+        .step-num {
+          animation: step-num-pop linear both;
+          animation-timeline: view();
+          animation-range: entry 10% cover 30%;
+        }
+        @keyframes step-num-pop {
+          from { transform: scale(0.4) rotate(-30deg); }
+          to   { transform: scale(1)   rotate(0deg); }
+        }
+      }
+    }
+
+    /* ── Sidebar dots ──────────────────────────────────────── */
     #sidebar {
       position: fixed;
       right: 1.5rem;
@@ -581,7 +780,7 @@
     .sidebar-dot.done { background: var(--green); border-color: var(--green); box-shadow: 0 0 8px var(--green-glow); }
     @media (max-width: 960px) { #sidebar { display: none; } }
 
-    /* ── Callout cards ─────────────────────────────────────── */
+    /* ── Callouts ──────────────────────────────────────────── */
     .callout {
       display: flex;
       gap: 1rem;
@@ -589,18 +788,15 @@
       padding: 1.25rem;
       border-radius: var(--radius);
       margin-bottom: 1.25rem;
-      border-left: 4px solid;
       backdrop-filter: blur(16px);
     }
     .callout-tip {
       background: rgba(34,197,94,0.07);
-      border-color: var(--green);
       border: 1px solid rgba(34,197,94,0.2);
       border-left: 4px solid var(--green);
     }
     .callout-note {
       background: rgba(245,158,11,0.07);
-      border-color: var(--gold);
       border: 1px solid rgba(245,158,11,0.2);
       border-left: 4px solid var(--gold);
     }
@@ -617,10 +813,18 @@
       background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(59,130,246,0.08));
       border: 1px solid rgba(34,197,94,0.3);
       margin-bottom: 2rem;
-      animation: banner-in 0.5s cubic-bezier(0.4,0,0.2,1);
       backdrop-filter: blur(16px);
     }
     #success-banner.show { display: block; }
+    @starting-style {
+      #success-banner.show {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+    }
+    #success-banner.show {
+      animation: banner-in 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
     @keyframes banner-in {
       from { opacity: 0; transform: scale(0.96) translateY(8px); }
       to   { opacity: 1; transform: scale(1) translateY(0); }
@@ -644,6 +848,124 @@
       gap: 0.75rem;
     }
     .footer-mono { font-family: 'Courier New', monospace; color: var(--accent); }
+    .footer-actions { display: flex; gap: 0.5rem; align-items: center; }
+    .pill-btn {
+      display: none;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.4rem 0.85rem;
+      min-height: 36px;
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text2);
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .pill-btn.show { display: inline-flex; }
+    .pill-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ── Floating ⌘K button (mobile only) ──────────────────── */
+    #cmdk-fab {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 90;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      box-shadow: 0 8px 24px var(--accent-glow);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    @media (min-width: 961px) { #cmdk-fab { display: none; } }
+
+    /* ── Command palette dialog ────────────────────────────── */
+    #cmdk {
+      width: min(560px, 92vw);
+      max-height: 70vh;
+      padding: 0;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      background: color-mix(in oklab, var(--bg) 92%, transparent);
+      color: var(--text);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    #cmdk::backdrop {
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+    }
+    @starting-style {
+      #cmdk[open] { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      #cmdk[open]::backdrop { opacity: 0; }
+    }
+    #cmdk[open] {
+      animation: dialog-in 0.18s ease;
+    }
+    @keyframes dialog-in {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .cmdk-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .cmdk-input-wrap .icon { color: var(--text2); font-size: 1rem; }
+    #cmdk-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .cmdk-kbd {
+      font-family: 'SF Mono', 'Menlo', monospace;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border: 1px solid var(--border2);
+      border-radius: 0.25rem;
+      color: var(--text2);
+      background: var(--surface2);
+    }
+    #cmdk-list {
+      list-style: none;
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 0.4rem;
+    }
+    .cmdk-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text);
+      transition: background 0.12s;
+    }
+    .cmdk-item .icon { font-size: 1rem; opacity: 0.8; flex-shrink: 0; }
+    .cmdk-item .label { flex: 1; }
+    .cmdk-item .hint { font-size: 0.75rem; color: var(--text2); }
+    .cmdk-item.selected, .cmdk-item:hover { background: var(--surface2); }
+    .cmdk-item.selected { box-shadow: inset 3px 0 0 var(--accent); }
+    .cmdk-empty { padding: 1.5rem 1rem; text-align: center; color: var(--text2); font-size: 0.875rem; }
 
     /* ── Confetti canvas ───────────────────────────────────── */
     #confetti-canvas {
@@ -657,6 +979,7 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
       .step-item { opacity: 1; transform: none; }
+      #hero-shader { display: none; }
     }
 
     /* ── Mobile ────────────────────────────────────────────── */
@@ -664,24 +987,39 @@
       .dns-grid { grid-template-columns: 1fr; }
       .dns-card .dns-addr { font-size: 1.2rem; }
       footer { flex-direction: column; align-items: flex-start; }
+      .top-controls { gap: 0.4rem; }
     }
   </style>
 </head>
 <body>
-  <!-- Background -->
+  <!-- Inline SVG defs for CRT filter -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="crt-filter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="2" seed="3"/>
+        <feDisplacementMap in="SourceGraphic" scale="4"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Backgrounds -->
   <div class="bg-canvas" aria-hidden="true">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
   </div>
+  <canvas id="hero-shader" aria-hidden="true"></canvas>
   <div class="bg-grid" aria-hidden="true"></div>
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
-  <!-- Theme toggle -->
-  <button id="theme-btn" aria-label="Toggle light/dark mode" title="Toggle theme">🌙</button>
+  <!-- Top controls -->
+  <div class="top-controls">
+    <button id="mute-btn" class="icon-btn muted" aria-label="Toggle sound (currently off)" title="Toggle sound">🔇</button>
+    <button id="theme-btn" class="icon-btn" aria-label="Toggle light/dark mode" title="Toggle theme">🌙</button>
+  </div>
 
   <div id="app">
-    <!-- Progress bar -->
+    <!-- Progress -->
     <div class="progress-bar-wrap" role="status" aria-live="polite" aria-atomic="true">
       <div class="progress-meta">
         <span>Progress</span>
@@ -690,14 +1028,129 @@
       <div class="progress-track">
         <div class="progress-fill" id="progress-fill"></div>
       </div>
+      <div id="diag-strip" aria-label="Network status">
+        <span class="diag-chip" id="diag-conn"><span class="dot-mini"></span><span id="diag-conn-text">checking…</span></span>
+        <span class="diag-chip" id="diag-rtt"><span>↺</span><span id="diag-rtt-text">— ms</span></span>
+      </div>
     </div>
 
     <!-- Hero -->
     <header>
       <div class="hero-badge"><span class="dot"></span> Quick Setup Guide</div>
-      <h1>Change DNS to Google<br>on iOS</h1>
+      <h1>Change DNS to Google on iOS</h1>
       <span class="shimmer-line" aria-hidden="true"></span>
       <p class="hero-sub">Switch to Google's fast, reliable public DNS — faster lookups, fewer outages.</p>
+
+      <!-- iPhone mock SVG -->
+      <div class="phone-wrap" aria-hidden="true">
+        <svg class="phone" viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Phone body -->
+          <rect x="2" y="2" width="156" height="276" rx="22" ry="22" fill="#111827" stroke="#1f2937" stroke-width="1.5"/>
+          <rect x="8" y="20" width="144" height="244" rx="6" ry="6" class="screen-bg"/>
+          <!-- Notch -->
+          <rect x="60" y="6" width="40" height="8" rx="4" fill="#000"/>
+          <!-- Home indicator -->
+          <rect x="60" y="270" width="40" height="2" rx="1" fill="#374151"/>
+
+          <!-- Screen 1: Home/Settings icon -->
+          <g class="screen screen-0">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">9:41</text>
+            <rect x="20" y="60" width="40" height="40" rx="8" fill="#64748b"/>
+            <text x="40" y="86" class="label" text-anchor="middle" fill="#fff">⚙</text>
+            <text x="40" y="115" class="label-dim" text-anchor="middle">Settings</text>
+            <rect x="80" y="60" width="40" height="40" rx="8" fill="#3b82f6" opacity="0.4"/>
+            <rect x="20" y="130" width="40" height="40" rx="8" fill="#1f2937"/>
+            <rect x="80" y="130" width="40" height="40" rx="8" fill="#1f2937"/>
+          </g>
+
+          <!-- Screen 2: Wi-Fi list -->
+          <g class="screen screen-1">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">Wi-Fi</text>
+            <rect x="14" y="55" width="132" height="22" rx="4" class="row-hl"/>
+            <text x="20" y="69" class="label">Home Wi-Fi</text>
+            <text x="138" y="69" class="label-accent" text-anchor="end">ⓘ</text>
+            <rect x="14" y="82" width="132" height="20" rx="4" class="row"/>
+            <text x="20" y="95" class="label-dim">Neighbour-5G</text>
+            <rect x="14" y="107" width="132" height="20" rx="4" class="row"/>
+            <text x="20" y="120" class="label-dim">Cafe-Guest</text>
+          </g>
+
+          <!-- Screen 3: Network details with DNS section visible -->
+          <g class="screen screen-2">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">Home Wi-Fi</text>
+            <rect x="14" y="55" width="132" height="20" rx="4" class="row"/>
+            <text x="20" y="68" class="label">Forget This Network</text>
+            <rect x="14" y="80" width="132" height="20" rx="4" class="row"/>
+            <text x="20" y="93" class="label">Auto-Join</text>
+            <rect x="14" y="105" width="132" height="22" rx="4" class="row-hl"/>
+            <text x="20" y="119" class="label">Configure DNS</text>
+            <text x="138" y="119" class="label-accent" text-anchor="end">›</text>
+          </g>
+
+          <!-- Screen 4: Configure DNS - Automatic selected -->
+          <g class="screen screen-3">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">Configure DNS</text>
+            <rect x="14" y="55" width="132" height="22" rx="4" class="row-hl"/>
+            <text x="20" y="69" class="label">Automatic</text>
+            <text x="138" y="69" class="label-accent" text-anchor="end">✓</text>
+            <rect x="14" y="82" width="132" height="22" rx="4" class="row"/>
+            <text x="20" y="96" class="label">Manual</text>
+          </g>
+
+          <!-- Screen 5: Manual selected -->
+          <g class="screen screen-4">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">Configure DNS</text>
+            <rect x="14" y="55" width="132" height="20" rx="4" class="row"/>
+            <text x="20" y="68" class="label">Automatic</text>
+            <rect x="14" y="80" width="132" height="22" rx="4" class="row-hl"/>
+            <text x="20" y="94" class="label">Manual</text>
+            <text x="138" y="94" class="label-accent" text-anchor="end">✓</text>
+            <text x="20" y="120" class="label-dim">DNS SERVERS</text>
+            <rect x="14" y="125" width="132" height="18" rx="3" class="row"/>
+            <text x="20" y="138" class="label-dim">192.168.1.1</text>
+          </g>
+
+          <!-- Screen 6: Removing existing -->
+          <g class="screen screen-5">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">Configure DNS</text>
+            <text x="20" y="60" class="label-dim">DNS SERVERS</text>
+            <rect x="14" y="65" width="132" height="22" rx="4" class="row"/>
+            <circle cx="22" cy="76" r="5" fill="#ef4444"/>
+            <text x="22" y="78" class="label" text-anchor="middle" fill="#fff" style="font-size:7px">−</text>
+            <text x="34" y="79" class="label-dim">192.168.1.1</text>
+            <text x="138" y="79" class="label" text-anchor="end" fill="#ef4444">Delete</text>
+          </g>
+
+          <!-- Screen 7: Adding 8.8.8.8 -->
+          <g class="screen screen-6">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">Configure DNS</text>
+            <text x="20" y="60" class="label-dim">DNS SERVERS</text>
+            <rect x="14" y="65" width="132" height="22" rx="4" class="row-hl"/>
+            <text x="20" y="79" class="label-accent">8.8.8.8</text>
+            <rect x="14" y="92" width="132" height="22" rx="4" class="row-hl"/>
+            <text x="20" y="106" class="label-accent">8.8.4.4</text>
+            <rect x="14" y="119" width="132" height="20" rx="4" class="row"/>
+            <text x="20" y="132" class="label-dim">Add Server</text>
+          </g>
+
+          <!-- Screen 8: Saved/Done -->
+          <g class="screen screen-7">
+            <text x="80" y="40" class="label-dim" text-anchor="middle">✓ Saved</text>
+            <text x="20" y="60" class="label-dim">DNS SERVERS</text>
+            <rect x="14" y="65" width="132" height="22" rx="4" class="row-done"/>
+            <text x="20" y="79" class="label-accent">8.8.8.8</text>
+            <text x="138" y="79" class="label" text-anchor="end" fill="#22c55e">✓</text>
+            <rect x="14" y="92" width="132" height="22" rx="4" class="row-done"/>
+            <text x="20" y="106" class="label-accent">8.8.4.4</text>
+            <text x="138" y="106" class="label" text-anchor="end" fill="#22c55e">✓</text>
+            <circle cx="80" cy="160" r="20" fill="#22c55e" opacity="0.2"/>
+            <text x="80" y="166" text-anchor="middle" fill="#22c55e" style="font:700 14px sans-serif">✓</text>
+          </g>
+
+          <!-- Finger pointer -->
+          <circle class="finger" r="4"/>
+        </svg>
+      </div>
     </header>
 
     <!-- DNS Addresses -->
@@ -706,24 +1159,59 @@
 
       <div class="tab-strip" role="tablist" aria-label="IP version">
         <div class="tab-indicator" id="tab-indicator"></div>
-        <button class="tab-btn active" id="tab-ipv4" role="tab" aria-selected="true" aria-controls="dns-panel">IPv4</button>
+        <button class="tab-btn active" id="tab-ipv4" role="tab" aria-selected="true"  aria-controls="dns-panel">IPv4</button>
         <button class="tab-btn"        id="tab-ipv6" role="tab" aria-selected="false" aria-controls="dns-panel">IPv6</button>
       </div>
 
       <div class="dns-grid" id="dns-panel" role="tabpanel">
-        <div class="dns-card">
+        <div class="dns-card card">
           <div class="dns-type">Primary</div>
-          <div class="dns-addr" id="addr-primary">8.8.8.8</div>
+          <div class="dns-addr triple-tap" id="addr-primary" data-addr="8.8.8.8">8.8.8.8</div>
           <button class="copy-btn" data-copy="8.8.8.8" aria-label="Copy primary DNS address">
             <span class="copy-icon">📋</span> Copy
           </button>
+          <div class="traceroute" id="tr-primary" aria-hidden="true">
+            <span class="hop">192.168.1.1 ······ home gateway</span>
+            <span class="hop">10.0.0.1 ········· isp edge</span>
+            <span class="hop">142.250.46.46 ···· google peering</span>
+            <span class="hop">8.8.8.8 ·········· dns.google ✓</span>
+          </div>
         </div>
-        <div class="dns-card">
+        <div class="dns-card card">
           <div class="dns-type">Secondary</div>
-          <div class="dns-addr" id="addr-secondary">8.8.4.4</div>
+          <div class="dns-addr triple-tap" id="addr-secondary" data-addr="8.8.4.4">8.8.4.4</div>
           <button class="copy-btn" data-copy="8.8.4.4" aria-label="Copy secondary DNS address">
             <span class="copy-icon">📋</span> Copy
           </button>
+          <div class="traceroute" id="tr-secondary" aria-hidden="true">
+            <span class="hop">192.168.1.1 ······ home gateway</span>
+            <span class="hop">10.0.0.1 ········· isp edge</span>
+            <span class="hop">142.250.46.46 ···· google peering</span>
+            <span class="hop">8.8.4.4 ·········· dns.google ✓</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pro mode panel (hidden until Konami) -->
+      <div id="pro-panel" aria-live="polite">
+        <div class="pro-title">Pro Mode — Alternative resolvers</div>
+        <div class="pro-grid">
+          <div class="pro-card">
+            <div class="label">Cloudflare</div>
+            <div class="value" data-addr="1.1.1.1">1.1.1.1</div>
+          </div>
+          <div class="pro-card">
+            <div class="label">Cloudflare 2</div>
+            <div class="value" data-addr="1.0.0.1">1.0.0.1</div>
+          </div>
+          <div class="pro-card">
+            <div class="label">Quad9</div>
+            <div class="value" data-addr="9.9.9.9">9.9.9.9</div>
+          </div>
+          <div class="pro-card">
+            <div class="label">OpenDNS</div>
+            <div class="value" data-addr="208.67.222.222">208.67.222.222</div>
+          </div>
         </div>
       </div>
     </section>
@@ -741,22 +1229,19 @@
         <h2 class="steps-title" id="steps-heading">Step-by-Step Instructions</h2>
         <button class="reset-btn" id="reset-btn" aria-label="Reset all progress">Reset</button>
       </div>
-
-      <ol class="steps-list" id="steps-list">
-        <!-- Steps injected by JS to avoid repetition -->
-      </ol>
+      <ol class="steps-list" id="steps-list"></ol>
     </section>
 
     <!-- Callouts -->
     <section aria-label="Tips and notes" style="margin-top:2rem">
-      <div class="callout callout-tip">
+      <div class="callout callout-tip card">
         <span class="callout-icon" aria-hidden="true">💡</span>
         <div class="callout-body">
           <strong>Tip:</strong> These settings apply only to the selected Wi-Fi network.
           Repeat for each network you use, or install a DNS configuration profile for system-wide changes.
         </div>
       </div>
-      <div class="callout callout-note">
+      <div class="callout callout-note card">
         <span class="callout-icon" aria-hidden="true">📡</span>
         <div class="callout-body">
           <strong>Cellular note:</strong> iOS cannot change DNS for mobile data through Settings.
@@ -767,65 +1252,63 @@
 
     <footer>
       <span>Google Public DNS — <span class="footer-mono">8.8.8.8</span> &amp; <span class="footer-mono">8.8.4.4</span></span>
-      <span>Free · No account needed</span>
+      <div class="footer-actions">
+        <button id="tilt-btn" class="pill-btn" aria-label="Enable device tilt effect">↺ Tilt</button>
+        <button id="share-btn" class="pill-btn" aria-label="Share this guide">↗ Share</button>
+      </div>
     </footer>
   </div>
 
   <!-- Sidebar dots -->
   <nav id="sidebar" aria-label="Step progress"></nav>
 
+  <!-- Floating ⌘K mobile -->
+  <button id="cmdk-fab" aria-label="Open command palette">⌘K</button>
+
+  <!-- Command palette dialog -->
+  <dialog id="cmdk" aria-label="Command palette">
+    <div class="cmdk-input-wrap">
+      <span class="icon" aria-hidden="true">🔎</span>
+      <input id="cmdk-input" type="text" placeholder="Search steps, copy DNS, toggle theme…" autocomplete="off" aria-label="Command search">
+      <span class="cmdk-kbd">Esc</span>
+    </div>
+    <ul id="cmdk-list" role="listbox"></ul>
+  </dialog>
+
   <script>
-    /* ── Step data ─────────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════
+       Step data
+       ════════════════════════════════════════════════════════ */
     const STEPS = [
-      {
-        title: 'Open Settings',
-        desc: 'Tap the <strong>Settings</strong> app on your home screen.',
-        why: 'All iOS network configuration lives in Settings — it\'s the gateway for Wi-Fi, cellular, and VPN options.'
-      },
-      {
-        title: 'Go to Wi-Fi',
-        desc: 'Tap <strong>Wi-Fi</strong> to see your available networks.',
-        path: 'Settings → Wi-Fi',
-        why: 'DNS is configured per-network on iOS, so you first need to enter the Wi-Fi screen to pick the right network.'
-      },
-      {
-        title: 'Open network details',
-        desc: 'Tap the <strong>ⓘ</strong> icon to the right of your connected Wi-Fi network name.',
-        why: 'The info icon (ⓘ) opens detailed settings for that specific network, including IP assignment and DNS.'
-      },
-      {
-        title: 'Scroll to DNS',
-        desc: 'Scroll down until you see the <strong>DNS</strong> section, then tap <strong>Configure DNS</strong>.',
-        why: 'This section controls which DNS resolvers your device queries when turning a domain name into an IP address.'
-      },
-      {
-        title: 'Switch to Manual',
-        desc: 'Select <strong>Manual</strong> at the top instead of Automatic.',
-        why: 'Automatic mode uses DNS servers pushed by your router via DHCP. Switching to Manual lets you override them with Google\'s servers.'
-      },
-      {
-        title: 'Remove existing servers',
-        desc: 'Tap the red <strong>–</strong> beside each existing DNS entry, then tap <strong>Delete</strong>.',
-        why: 'Old entries (usually your router\'s IP) would take precedence or conflict with Google\'s servers if left in place.'
-      },
-      {
-        title: 'Add Google\'s servers',
-        desc: 'Tap <strong>Add Server</strong>, enter <code style="font-family:monospace;color:var(--accent)">8.8.8.8</code>, tap <strong>Add Server</strong> again, and enter <code style="font-family:monospace;color:var(--accent)">8.8.4.4</code>.',
-        why: '8.8.8.8 is the primary; 8.8.4.4 is the secondary fallback. Your device tries the primary first, then falls back automatically.'
-      },
-      {
-        title: 'Save',
-        desc: 'Tap <strong>Save</strong> in the top-right corner. Done — your device now uses Google DNS.',
-        why: 'iOS applies the new DNS configuration immediately to all new connections on this Wi-Fi network.'
-      }
+      { title: 'Open Settings',           desc: 'Tap the <strong>Settings</strong> app on your home screen.',                                                                                                          why: 'All iOS network configuration lives in Settings — it\'s the gateway for Wi-Fi, cellular, and VPN options.' },
+      { title: 'Go to Wi-Fi',             desc: 'Tap <strong>Wi-Fi</strong> to see your available networks.',                                                                                                          path: 'Settings → Wi-Fi', why: 'DNS is configured per-network on iOS, so you first need to enter the Wi-Fi screen to pick the right network.' },
+      { title: 'Open network details',    desc: 'Tap the <strong>ⓘ</strong> icon to the right of your connected Wi-Fi network name.',                                                                                  why: 'The info icon (ⓘ) opens detailed settings for that specific network, including IP assignment and DNS.' },
+      { title: 'Scroll to DNS',           desc: 'Scroll down until you see the <strong>DNS</strong> section, then tap <strong>Configure DNS</strong>.',                                                                why: 'This section controls which DNS resolvers your device queries when turning a domain name into an IP address.' },
+      { title: 'Switch to Manual',        desc: 'Select <strong>Manual</strong> at the top instead of Automatic.',                                                                                                     why: 'Automatic mode uses DNS servers pushed by your router via DHCP. Switching to Manual lets you override them with Google\'s servers.' },
+      { title: 'Remove existing servers', desc: 'Tap the red <strong>–</strong> beside each existing DNS entry, then tap <strong>Delete</strong>.',                                                                    why: 'Old entries (usually your router\'s IP) would take precedence or conflict with Google\'s servers if left in place.' },
+      { title: 'Add Google\'s servers',   desc: 'Tap <strong>Add Server</strong>, enter <code style="font-family:monospace;color:var(--accent)">8.8.8.8</code>, then <code style="font-family:monospace;color:var(--accent)">8.8.4.4</code>.', why: '8.8.8.8 is the primary; 8.8.4.4 is the secondary fallback. Your device tries the primary first, then falls back automatically.' },
+      { title: 'Save',                    desc: 'Tap <strong>Save</strong> in the top-right corner. Done — your device now uses Google DNS.',                                                                          why: 'iOS applies the new DNS configuration immediately to all new connections on this Wi-Fi network.' }
     ];
 
-    /* ── Build steps ───────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════
+       Settings (localStorage persistence)
+       ════════════════════════════════════════════════════════ */
+    const KEY = 'dns-guide:v2';
+    const settings = Object.assign(
+      { theme: 'dark', muted: true, tilt: false, pro: false },
+      JSON.parse(localStorage.getItem(KEY) || '{}')
+    );
+    const saveSettings = () => localStorage.setItem(KEY, JSON.stringify(settings));
+
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ════════════════════════════════════════════════════════
+       Build steps + sidebar
+       ════════════════════════════════════════════════════════ */
     const list    = document.getElementById('steps-list');
     const sidebar = document.getElementById('sidebar');
 
     STEPS.forEach((s, i) => {
-      // List item
       const li = document.createElement('li');
       li.className = 'step-item card';
       li.id = `step-${i}`;
@@ -834,7 +1317,6 @@
       li.setAttribute('tabindex', '0');
       li.setAttribute('aria-label', `Step ${i+1}: ${s.title}`);
       li.style.transitionDelay = `${i * 80}ms`;
-
       li.innerHTML = `
         <div class="step-num" aria-hidden="true">
           <span class="step-num-val">${i + 1}</span>
@@ -847,68 +1329,114 @@
           <button class="why-toggle" aria-expanded="false" aria-controls="why-${i}">
             Why? <i class="chevron" aria-hidden="true">▾</i>
           </button>
-          <div class="why-panel" id="why-${i}" role="region">
-            <div class="why-inner">${s.why}</div>
-          </div>
+          <div class="why-panel" id="why-${i}" role="region"><div class="why-inner">${s.why}</div></div>
         </div>`;
-
       list.appendChild(li);
 
-      // Sidebar dot
       const dot = document.createElement('button');
       dot.className = 'sidebar-dot';
-      dot.dataset.label = `Step ${i + 1}`;
+      dot.dataset.label = `Step ${i + 1}: ${s.title}`;
       dot.setAttribute('aria-label', `Jump to step ${i + 1}: ${s.title}`);
       dot.dataset.target = `step-${i}`;
       sidebar.appendChild(dot);
     });
 
-    /* ── State ─────────────────────────────────────────────── */
-    const state = { done: new Set() };
+    /* ════════════════════════════════════════════════════════
+       State + progress
+       ════════════════════════════════════════════════════════ */
+    const state = { done: new Set(), activeStep: 0 };
+
+    const baseTitle = document.title;
+
+    function updateFavicon(pct) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 32;
+      const ctx = c.getContext('2d');
+      ctx.beginPath();
+      ctx.arc(16, 16, 12, 0, Math.PI * 2);
+      ctx.fillStyle = '#0a0f1e';
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(59,130,246,0.25)';
+      ctx.beginPath();
+      ctx.arc(16, 16, 11, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = pct === 100 ? '#22c55e' : '#3b82f6';
+      ctx.beginPath();
+      ctx.arc(16, 16, 11, -Math.PI / 2, -Math.PI / 2 + (pct / 100) * Math.PI * 2);
+      ctx.stroke();
+      if (pct === 100) {
+        ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(10, 16); ctx.lineTo(15, 21); ctx.lineTo(23, 11);
+        ctx.stroke();
+      }
+      document.getElementById('favicon').href = c.toDataURL('image/png');
+    }
 
     function updateProgress() {
-      const n    = state.done.size;
-      const pct  = (n / STEPS.length) * 100;
+      const n   = state.done.size;
+      const pct = (n / STEPS.length) * 100;
       document.getElementById('progress-fill').style.width = pct + '%';
       document.getElementById('progress-label').textContent = `${n} of ${STEPS.length} steps complete`;
+      document.querySelectorAll('.sidebar-dot').forEach((dot, i) => dot.classList.toggle('done', state.done.has(i)));
 
-      // Sidebar dots
-      document.querySelectorAll('.sidebar-dot').forEach((dot, i) => {
-        dot.classList.toggle('done', state.done.has(i));
-      });
+      // Document title
+      document.title = n === STEPS.length ? `✓ Done — DNS configured`
+                     : n > 0              ? `(${n}/${STEPS.length}) ${baseTitle}`
+                                          : baseTitle;
+      updateFavicon(pct);
 
-      // All done?
+      // Banner + completion fx
+      const banner = document.getElementById('success-banner');
       if (n === STEPS.length) {
-        document.getElementById('success-banner').classList.add('show');
-        launchConfetti();
+        if (!banner.classList.contains('show')) {
+          banner.classList.add('show');
+          launchConfetti();
+          chord();
+          haptic(20);
+          releaseWakeLock();
+        }
       } else {
-        document.getElementById('success-banner').classList.remove('show');
+        banner.classList.remove('show');
       }
+
+      // Advance phone screen to highest done step
+      const screenIdx = n === 0 ? 0 : Math.min(n, 7);
+      advancePhoneTo(screenIdx);
     }
 
     function toggleStep(i) {
       const item = document.getElementById(`step-${i}`);
-      if (state.done.has(i)) {
-        state.done.delete(i);
-        item.classList.remove('done');
-        item.setAttribute('aria-checked', 'false');
+      const goingOn = !state.done.has(i);
+      const run = () => {
+        if (goingOn) {
+          state.done.add(i);
+          item.classList.add('done');
+          item.setAttribute('aria-checked', 'true');
+          const num = item.querySelector('.step-num');
+          num.animate([
+            { transform: 'scale(1)' },
+            { transform: 'scale(1.4)' },
+            { transform: 'scale(0.9)' },
+            { transform: 'scale(1)' }
+          ], { duration: 350, easing: 'ease' });
+          boop(i);
+          haptic(8);
+        } else {
+          state.done.delete(i);
+          item.classList.remove('done');
+          item.setAttribute('aria-checked', 'false');
+        }
+        updateProgress();
+      };
+      if (document.startViewTransition && !reduceMotion) {
+        document.startViewTransition(run);
       } else {
-        state.done.add(i);
-        item.classList.add('done');
-        item.setAttribute('aria-checked', 'true');
-        // Bounce the circle
-        const num = item.querySelector('.step-num');
-        num.animate([
-          { transform: 'scale(1)' },
-          { transform: 'scale(1.4)' },
-          { transform: 'scale(0.9)' },
-          { transform: 'scale(1)' }
-        ], { duration: 350, easing: 'ease' });
+        run();
       }
-      updateProgress();
     }
 
-    // Step click / keyboard
     document.querySelectorAll('.step-item').forEach((item, i) => {
       item.addEventListener('click', e => {
         if (e.target.closest('.why-toggle')) return;
@@ -919,89 +1447,114 @@
       });
     });
 
-    /* ── Why accordion ─────────────────────────────────────── */
     document.querySelectorAll('.why-toggle').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
-        const open   = btn.classList.toggle('open');
-        const panel  = document.getElementById(btn.getAttribute('aria-controls'));
-        panel.classList.toggle('open', open);
+        const open = btn.classList.toggle('open');
+        document.getElementById(btn.getAttribute('aria-controls')).classList.toggle('open', open);
         btn.setAttribute('aria-expanded', open);
       });
     });
 
-    /* ── Reset ─────────────────────────────────────────────── */
     document.getElementById('reset-btn').addEventListener('click', () => {
-      state.done.clear();
-      document.querySelectorAll('.step-item').forEach(item => {
-        item.classList.remove('done');
-        item.setAttribute('aria-checked', 'false');
-      });
-      updateProgress();
+      const run = () => {
+        state.done.clear();
+        document.querySelectorAll('.step-item').forEach(item => {
+          item.classList.remove('done');
+          item.setAttribute('aria-checked', 'false');
+        });
+        updateProgress();
+        sweep();
+        haptic(12);
+      };
+      if (document.startViewTransition && !reduceMotion) document.startViewTransition(run);
+      else run();
       const btn = document.getElementById('reset-btn');
       btn.classList.add('shake');
       btn.addEventListener('animationend', () => btn.classList.remove('shake'), { once: true });
     });
 
-    /* ── Sidebar dot navigation ────────────────────────────── */
     document.querySelectorAll('.sidebar-dot').forEach(dot => {
       dot.addEventListener('click', () => {
         document.getElementById(dot.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     });
 
-    /* ── Intersection Observer (step reveals) ─────────────── */
     const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
       });
     }, { threshold: 0.1 });
     document.querySelectorAll('.step-item').forEach(el => observer.observe(el));
 
-    /* ── Copy buttons ──────────────────────────────────────── */
-    document.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', async e => {
-        e.stopPropagation();
-        const addr = btn.dataset.copy;
-        try {
-          await navigator.clipboard.writeText(addr);
-        } catch {
-          // Fallback for non-secure contexts
-          const ta = document.createElement('textarea');
-          ta.value = addr; ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta); ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-        }
-        btn.classList.add('copied');
-        btn.querySelector('.copy-icon').textContent = '✅';
-        btn.innerHTML = btn.innerHTML.replace('Copy', 'Copied!');
-        setTimeout(() => {
-          btn.classList.remove('copied');
-          btn.querySelector('.copy-icon').textContent = '📋';
-          btn.innerHTML = btn.innerHTML.replace('Copied!', 'Copy');
-        }, 2000);
+    /* ════════════════════════════════════════════════════════
+       Pointer-tracking glow
+       ════════════════════════════════════════════════════════ */
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      let raf = 0;
+      document.addEventListener('pointermove', e => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          const el = e.target.closest('.card');
+          if (el) {
+            const r = el.getBoundingClientRect();
+            el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+            el.style.setProperty('--my', (e.clientY - r.top)  + 'px');
+          }
+          raf = 0;
+        });
       });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       Copy buttons (incl. pro panel + DNS text)
+       ════════════════════════════════════════════════════════ */
+    async function copyText(addr, source) {
+      try { await navigator.clipboard.writeText(addr); }
+      catch {
+        const ta = document.createElement('textarea');
+        ta.value = addr; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      click();
+      haptic(6);
+      if (source) {
+        source.classList.add('copied');
+        const icon = source.querySelector('.copy-icon');
+        if (icon) icon.textContent = '✅';
+        source.innerHTML = source.innerHTML.replace('Copy', 'Copied!');
+        setTimeout(() => {
+          source.classList.remove('copied');
+          const i2 = source.querySelector('.copy-icon');
+          if (i2) i2.textContent = '📋';
+          source.innerHTML = source.innerHTML.replace('Copied!', 'Copy');
+        }, 2000);
+      }
+    }
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); copyText(btn.dataset.copy, btn); });
+    });
+    document.querySelectorAll('#pro-panel .value').forEach(el => {
+      el.addEventListener('click', () => copyText(el.dataset.addr));
     });
 
-    /* ── IPv4 / IPv6 tabs ──────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════
+       IPv4 / IPv6 tabs
+       ════════════════════════════════════════════════════════ */
     const DNS = {
       v4: { primary: '8.8.8.8',                secondary: '8.8.4.4' },
-      v6: { primary: '2001:4860:4860::8888',    secondary: '2001:4860:4860::8844' }
+      v6: { primary: '2001:4860:4860::8888',   secondary: '2001:4860:4860::8844' }
     };
     const tabIpv4 = document.getElementById('tab-ipv4');
     const tabIpv6 = document.getElementById('tab-ipv6');
     const indicator = document.getElementById('tab-indicator');
-
     function positionIndicator(btn) {
       indicator.style.left  = btn.offsetLeft + 'px';
       indicator.style.width = btn.offsetWidth + 'px';
     }
     positionIndicator(tabIpv4);
-
     function switchTab(version) {
       const isV4 = version === 'v4';
       tabIpv4.classList.toggle('active', isV4);
@@ -1009,52 +1562,461 @@
       tabIpv4.setAttribute('aria-selected', isV4);
       tabIpv6.setAttribute('aria-selected', !isV4);
       positionIndicator(isV4 ? tabIpv4 : tabIpv6);
-
       const d = DNS[version];
       const primary   = document.getElementById('addr-primary');
       const secondary = document.getElementById('addr-secondary');
-      primary.style.opacity = '0';
-      secondary.style.opacity = '0';
+      primary.style.transition = secondary.style.transition = 'opacity 0.18s';
+      primary.style.opacity = secondary.style.opacity = '0';
       setTimeout(() => {
         primary.textContent = d.primary;
         secondary.textContent = d.secondary;
+        primary.dataset.addr = d.primary;
+        secondary.dataset.addr = d.secondary;
         document.querySelectorAll('.copy-btn')[0].dataset.copy = d.primary;
         document.querySelectorAll('.copy-btn')[1].dataset.copy = d.secondary;
-        primary.style.opacity = '1';
-        secondary.style.opacity = '1';
+        primary.style.opacity = secondary.style.opacity = '1';
       }, 180);
-      primary.style.transition = 'opacity 0.18s';
-      secondary.style.transition = 'opacity 0.18s';
     }
     tabIpv4.addEventListener('click', () => switchTab('v4'));
     tabIpv6.addEventListener('click', () => switchTab('v6'));
 
-    /* ── Theme toggle ──────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════
+       Theme + mute toggles
+       ════════════════════════════════════════════════════════ */
     const themeBtn = document.getElementById('theme-btn');
-    let theme = localStorage.getItem('dns-guide-theme') || 'dark';
-
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       themeBtn.textContent = t === 'dark' ? '🌙' : '☀️';
-      localStorage.setItem('dns-guide-theme', t);
+      settings.theme = t; saveSettings();
     }
-    applyTheme(theme);
+    applyTheme(settings.theme);
+    themeBtn.addEventListener('click', () => applyTheme(settings.theme === 'dark' ? 'light' : 'dark'));
 
-    themeBtn.addEventListener('click', () => {
-      theme = theme === 'dark' ? 'light' : 'dark';
-      applyTheme(theme);
+    const muteBtn = document.getElementById('mute-btn');
+    function applyMute(m) {
+      settings.muted = m;
+      muteBtn.textContent = m ? '🔇' : '🔊';
+      muteBtn.classList.toggle('muted', m);
+      muteBtn.setAttribute('aria-label', m ? 'Unmute' : 'Mute');
+      saveSettings();
+    }
+    applyMute(settings.muted);
+    muteBtn.addEventListener('click', () => applyMute(!settings.muted));
+
+    /* ════════════════════════════════════════════════════════
+       Web Audio API (lazy)
+       ════════════════════════════════════════════════════════ */
+    let audioCtx = null;
+    function ensureAudio() {
+      if (!audioCtx && typeof AudioContext !== 'undefined') audioCtx = new AudioContext();
+      return audioCtx;
+    }
+    function tone(freq, dur = 0.15, type = 'sine', gain = 0.06) {
+      if (settings.muted) return;
+      const ctx = ensureAudio(); if (!ctx) return;
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.02);
+    }
+    function boop(i) { tone(440 + i * 35, 0.12, 'sine'); }
+    function click() { tone(800, 0.04, 'square', 0.03); }
+    function sweep() {
+      [600, 480, 360, 260].forEach((f, i) => setTimeout(() => tone(f, 0.08, 'triangle', 0.04), i * 40));
+    }
+    function chord() {
+      [392, 494, 587, 880].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'sine', 0.05), i * 60));
+    }
+    function haptic(ms) {
+      if (settings.muted) return;
+      if (navigator.vibrate) navigator.vibrate(ms);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       SVG phone — advance screen + finger
+       ════════════════════════════════════════════════════════ */
+    function advancePhoneTo(idx) {
+      document.querySelectorAll('.phone .screen').forEach((s, i) => s.classList.toggle('active', i === idx));
+      const finger = document.querySelector('.phone .finger');
+      if (finger) finger.style.offsetDistance = `${(idx / 7) * 100}%`;
+    }
+    advancePhoneTo(0);
+
+    /* ════════════════════════════════════════════════════════
+       Device tilt
+       ════════════════════════════════════════════════════════ */
+    const tiltBtn = document.getElementById('tilt-btn');
+    let tiltActive = false;
+    function handleOrient(e) {
+      if (!tiltActive) return;
+      const beta  = Math.max(-30, Math.min(30, e.beta  || 0));
+      const gamma = Math.max(-30, Math.min(30, e.gamma || 0));
+      document.documentElement.style.setProperty('--tilt-x', (beta * 0.2) + 'deg');
+      document.documentElement.style.setProperty('--tilt-y', (gamma * 0.2) + 'deg');
+    }
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+      tiltBtn.classList.add('show');
+      tiltBtn.addEventListener('click', async () => {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          try {
+            const res = await DeviceOrientationEvent.requestPermission();
+            if (res !== 'granted') return;
+          } catch { return; }
+        }
+        tiltActive = !tiltActive;
+        tiltBtn.textContent = tiltActive ? '↺ Tilt ✓' : '↺ Tilt';
+        window.addEventListener('deviceorientation', handleOrient);
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       Web Share
+       ════════════════════════════════════════════════════════ */
+    if (navigator.share) {
+      const sb = document.getElementById('share-btn');
+      sb.classList.add('show');
+      sb.addEventListener('click', () => {
+        navigator.share({
+          title: 'Change DNS to Google on iOS',
+          text:  'Quick step-by-step guide to switching iOS DNS to Google (8.8.8.8).',
+          url:   location.href
+        }).catch(() => {});
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       Wake Lock
+       ════════════════════════════════════════════════════════ */
+    let wakeLock = null;
+    async function acquireWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      if (document.visibilityState !== 'visible') return;
+      if (state.done.size === STEPS.length) return;
+      try { wakeLock = await navigator.wakeLock.request('screen'); }
+      catch {}
+    }
+    async function releaseWakeLock() {
+      if (wakeLock) { try { await wakeLock.release(); } catch {} wakeLock = null; }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') acquireWakeLock();
+      else releaseWakeLock();
     });
 
-    /* ── Confetti ──────────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════
+       Connection diagnostic strip
+       ════════════════════════════════════════════════════════ */
+    (function diag() {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const strip = document.getElementById('diag-strip');
+      const connText = document.getElementById('diag-conn-text');
+      const rttText  = document.getElementById('diag-rtt-text');
+      const connChip = document.getElementById('diag-conn');
+      if (!conn && !('onLine' in navigator)) return;
+      strip.classList.add('show');
+
+      function render() {
+        const online = navigator.onLine;
+        connChip.classList.toggle('offline', !online);
+        if (!online) { connText.textContent = 'offline'; return; }
+        if (conn) {
+          const type = conn.type || conn.effectiveType || 'online';
+          const down = conn.downlink ? ` · ${conn.downlink}Mbps` : '';
+          connText.textContent = `${type}${down}`;
+        } else {
+          connText.textContent = 'online';
+        }
+      }
+      function bench() {
+        const t0 = performance.now();
+        fetch('data:text/plain,ok').then(() => {
+          const t = performance.now() - t0;
+          rttText.textContent = `${t.toFixed(1)} ms self-ping`;
+        }).catch(() => { rttText.textContent = '— ms'; });
+      }
+      render(); bench();
+      conn?.addEventListener?.('change', render);
+      window.addEventListener('online', render);
+      window.addEventListener('offline', render);
+      setInterval(bench, 8000);
+    })();
+
+    /* ════════════════════════════════════════════════════════
+       Command palette
+       ════════════════════════════════════════════════════════ */
+    const cmdk      = document.getElementById('cmdk');
+    const cmdkInput = document.getElementById('cmdk-input');
+    const cmdkList  = document.getElementById('cmdk-list');
+    const cmdkFab   = document.getElementById('cmdk-fab');
+
+    function buildCommands() {
+      const c = [];
+      STEPS.forEach((s, i) => c.push({
+        icon: '↳', label: `Step ${i + 1}: ${s.title}`, hint: 'jump',
+        action: () => { document.getElementById(`step-${i}`).scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      }));
+      c.push({ icon: '📋', label: 'Copy 8.8.8.8',           hint: 'primary',   action: () => copyText('8.8.8.8') });
+      c.push({ icon: '📋', label: 'Copy 8.8.4.4',           hint: 'secondary', action: () => copyText('8.8.4.4') });
+      c.push({ icon: '📋', label: 'Copy IPv6 (Google)',     hint: 'ipv6',      action: () => copyText('2001:4860:4860::8888') });
+      c.push({ icon: '🌐', label: 'Switch to IPv4',         hint: 'tab',       action: () => switchTab('v4') });
+      c.push({ icon: '🌐', label: 'Switch to IPv6',         hint: 'tab',       action: () => switchTab('v6') });
+      c.push({ icon: '🌓', label: 'Toggle theme',           hint: 'ui',        action: () => applyTheme(settings.theme === 'dark' ? 'light' : 'dark') });
+      c.push({ icon: '🔊', label: settings.muted ? 'Unmute sounds' : 'Mute sounds', hint: 'audio', action: () => applyMute(!settings.muted) });
+      c.push({ icon: '↩',  label: 'Reset progress',         hint: 'state',     action: () => document.getElementById('reset-btn').click() });
+      c.push({ icon: '✓',  label: 'Mark all steps complete', hint: 'state',    action: () => STEPS.forEach((_, i) => { if (!state.done.has(i)) toggleStep(i); }) });
+      return c;
+    }
+    const COMMANDS = buildCommands();
+    let cmdkSelected = 0;
+
+    function renderCmdk() {
+      const q = cmdkInput.value.trim().toLowerCase();
+      const filtered = q ? COMMANDS.filter(c => c.label.toLowerCase().includes(q) || c.hint.includes(q)) : COMMANDS;
+      cmdkList.innerHTML = filtered.length === 0
+        ? '<li class="cmdk-empty">No matches.</li>'
+        : filtered.map((c, i) => `
+          <li class="cmdk-item ${i === cmdkSelected ? 'selected' : ''}" role="option" data-idx="${i}">
+            <span class="icon">${c.icon}</span>
+            <span class="label">${c.label}</span>
+            <span class="hint">${c.hint}</span>
+          </li>`).join('');
+      cmdkList._items = filtered;
+      cmdkList.querySelectorAll('.cmdk-item').forEach((el, i) => {
+        el.addEventListener('click', () => { runCmd(filtered[i]); });
+        el.addEventListener('mouseenter', () => { cmdkSelected = i; updateSelection(); });
+      });
+    }
+    function updateSelection() {
+      cmdkList.querySelectorAll('.cmdk-item').forEach((el, i) => el.classList.toggle('selected', i === cmdkSelected));
+      cmdkList.querySelectorAll('.cmdk-item')[cmdkSelected]?.scrollIntoView({ block: 'nearest' });
+    }
+    function openCmdk() {
+      cmdkSelected = 0;
+      cmdkInput.value = '';
+      renderCmdk();
+      cmdk.showModal();
+      setTimeout(() => cmdkInput.focus(), 30);
+    }
+    function runCmd(cmd) {
+      cmd?.action?.();
+      cmdk.close();
+    }
+    cmdkFab.addEventListener('click', openCmdk);
+    cmdkInput.addEventListener('input', () => { cmdkSelected = 0; renderCmdk(); });
+    cmdk.addEventListener('keydown', e => {
+      const items = cmdkList._items || [];
+      if (e.key === 'ArrowDown') { e.preventDefault(); cmdkSelected = Math.min(items.length - 1, cmdkSelected + 1); updateSelection(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); cmdkSelected = Math.max(0, cmdkSelected - 1); updateSelection(); }
+      else if (e.key === 'Enter') { e.preventDefault(); runCmd(items[cmdkSelected]); }
+    });
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        cmdk.open ? cmdk.close() : openCmdk();
+      }
+    });
+
+    /* ════════════════════════════════════════════════════════
+       Triple-tap traceroute
+       ════════════════════════════════════════════════════════ */
+    document.querySelectorAll('.triple-tap').forEach(el => {
+      let count = 0, timer = 0;
+      const targetId = el.id === 'addr-primary' ? 'tr-primary' : 'tr-secondary';
+      el.addEventListener('click', () => {
+        count++;
+        clearTimeout(timer);
+        timer = setTimeout(() => { count = 0; }, 500);
+        if (count >= 3) {
+          count = 0;
+          const tr = document.getElementById(targetId);
+          tr.classList.toggle('show');
+          if (tr.classList.contains('show')) { sweep(); haptic(10); }
+        }
+      });
+    });
+
+    /* ════════════════════════════════════════════════════════
+       Konami code → pro mode
+       ════════════════════════════════════════════════════════ */
+    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let buf = [];
+    function applyPro(on) {
+      settings.pro = on;
+      document.body.classList.toggle('pro-mode', on);
+      saveSettings();
+      if (on) { chord(); haptic(15); }
+    }
+    if (settings.pro) applyPro(true);
+    document.addEventListener('keydown', e => {
+      buf.push(e.key);
+      if (buf.length > KONAMI.length) buf.shift();
+      if (buf.length === KONAMI.length && buf.every((k, i) => k.toLowerCase() === KONAMI[i].toLowerCase())) {
+        applyPro(!settings.pro);
+        buf = [];
+      }
+    });
+
+    /* ════════════════════════════════════════════════════════
+       WebGL2 packet-flow shader
+       ════════════════════════════════════════════════════════ */
+    (function shader() {
+      if (reduceMotion) return;
+      const canvas = document.getElementById('hero-shader');
+      const gl = canvas.getContext('webgl2', { antialias: false, alpha: true, premultipliedAlpha: false });
+      if (!gl) return;
+
+      const vsrc = `#version 300 es
+        in vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`;
+      const fsrc = `#version 300 es
+        precision highp float;
+        uniform vec2 u_res;
+        uniform float u_t;
+        uniform float u_progress;
+        out vec4 o;
+
+        // FBM noise
+        float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 34.345); return fract(p.x * p.y); }
+        float noise(vec2 p){
+          vec2 i = floor(p), f = fract(p);
+          float a = hash(i), b = hash(i + vec2(1,0)), c = hash(i + vec2(0,1)), d = hash(i + vec2(1,1));
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+        }
+        float fbm(vec2 p){
+          float v = 0.0, a = 0.5;
+          for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.05; a *= 0.5; }
+          return v;
+        }
+        // Distance to line segment
+        float segDist(vec2 p, vec2 a, vec2 b){
+          vec2 pa = p - a, ba = b - a;
+          float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+          return length(pa - ba * h);
+        }
+        // Pulse traveling along segment
+        float pulse(vec2 p, vec2 a, vec2 b, float t){
+          vec2 q = mix(a, b, fract(t));
+          return smoothstep(0.06, 0.0, length(p - q));
+        }
+
+        void main(){
+          vec2 uv = (gl_FragCoord.xy - 0.5 * u_res) / u_res.y;
+          float t = u_t * 0.15;
+          vec3 col = vec3(0.02, 0.04, 0.10);
+
+          // Background nebula
+          float n = fbm(uv * 1.4 + t);
+          col += vec3(0.05, 0.12, 0.30) * n * 0.6;
+          col += vec3(0.20, 0.10, 0.35) * fbm(uv * 0.8 - t * 0.5) * 0.4;
+
+          // Node positions (drift slightly)
+          vec2 device = vec2(-0.6 + 0.04 * sin(u_t * 0.3),  0.30 + 0.03 * cos(u_t * 0.27));
+          vec2 router = vec2( 0.00 + 0.05 * sin(u_t * 0.41), 0.00 + 0.04 * cos(u_t * 0.33));
+          vec2 isp    = vec2( 0.35 + 0.03 * cos(u_t * 0.29),-0.25 + 0.04 * sin(u_t * 0.36));
+          vec2 dns    = vec2( 0.70 + 0.02 * sin(u_t * 0.20), 0.25 + 0.02 * cos(u_t * 0.24));
+
+          float l1 = segDist(uv, device, router);
+          float l2 = segDist(uv, router, isp);
+          float l3 = segDist(uv, isp,    dns);
+          float lines = smoothstep(0.012, 0.0, l1) + smoothstep(0.012, 0.0, l2) + smoothstep(0.012, 0.0, l3);
+          col += vec3(0.35, 0.55, 1.0) * lines * (0.7 + 0.3 * u_progress);
+
+          // Pulses
+          float p1 = pulse(uv, device, router, u_t * 0.25 + 0.0);
+          float p2 = pulse(uv, router, isp,    u_t * 0.25 + 0.33);
+          float p3 = pulse(uv, isp,    dns,    u_t * 0.25 + 0.66);
+          col += vec3(0.4, 0.8, 1.0) * (p1 + p2 + p3) * (0.5 + u_progress);
+
+          // Nodes
+          float nodes = 0.0;
+          nodes += smoothstep(0.04, 0.0, length(uv - device));
+          nodes += smoothstep(0.04, 0.0, length(uv - router));
+          nodes += smoothstep(0.04, 0.0, length(uv - isp));
+          nodes += smoothstep(0.05, 0.0, length(uv - dns));
+          col += vec3(0.5, 0.7, 1.0) * nodes;
+
+          // Glow halo on dns when complete
+          col += vec3(0.2, 1.0, 0.5) * smoothstep(0.25, 0.0, length(uv - dns)) * u_progress * 0.4;
+
+          // Vignette
+          float v = 1.0 - smoothstep(0.6, 1.2, length(uv));
+          col *= v;
+          o = vec4(col, 1.0);
+        }`;
+
+      function compile(type, src) {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+          console.warn(gl.getShaderInfoLog(sh)); return null;
+        }
+        return sh;
+      }
+      const vs = compile(gl.VERTEX_SHADER, vsrc);
+      const fs = compile(gl.FRAGMENT_SHADER, fsrc);
+      if (!vs || !fs) return;
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs); gl.attachShader(prog, fs);
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn(gl.getProgramInfoLog(prog)); return; }
+      gl.useProgram(prog);
+
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'a');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      const uRes = gl.getUniformLocation(prog, 'u_res');
+      const uT   = gl.getUniformLocation(prog, 'u_t');
+      const uP   = gl.getUniformLocation(prog, 'u_progress');
+
+      function resize() {
+        const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+        canvas.width  = innerWidth  * dpr;
+        canvas.height = innerHeight * dpr;
+        canvas.style.width  = innerWidth + 'px';
+        canvas.style.height = innerHeight + 'px';
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      resize(); addEventListener('resize', resize);
+
+      let visible = true, running = true;
+      document.addEventListener('visibilitychange', () => { visible = document.visibilityState === 'visible'; });
+
+      document.body.classList.add('shader-on');
+
+      const t0 = performance.now();
+      function frame() {
+        if (!visible) { requestAnimationFrame(frame); return; }
+        const t = (performance.now() - t0) / 1000;
+        gl.uniform2f(uRes, canvas.width, canvas.height);
+        gl.uniform1f(uT, t);
+        gl.uniform1f(uP, state.done.size / STEPS.length);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        requestAnimationFrame(frame);
+      }
+      frame();
+    })();
+
+    /* ════════════════════════════════════════════════════════
+       Confetti
+       ════════════════════════════════════════════════════════ */
     function launchConfetti() {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (reduceMotion) return;
       const canvas = document.getElementById('confetti-canvas');
       const ctx    = canvas.getContext('2d');
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const colors  = ['#3b82f6','#8b5cf6','#22c55e','#f59e0b','#ec4899','#06b6d4'];
-      const pieces  = Array.from({ length: 140 }, () => ({
+      canvas.width  = innerWidth;
+      canvas.height = innerHeight;
+      const colors = ['#3b82f6','#8b5cf6','#22c55e','#f59e0b','#ec4899','#06b6d4'];
+      const pieces = Array.from({ length: 160 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * -canvas.height,
         r: Math.random() * 7 + 4,
@@ -1065,11 +2027,8 @@
         angle: Math.random() * Math.PI * 2,
         shape: Math.random() > 0.5 ? 'rect' : 'circle'
       }));
-
-      let frame;
-      let elapsed = 0;
-      const MAX   = 200;
-
+      let frame = 0, elapsed = 0;
+      const MAX = 220;
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pieces.forEach(p => {
@@ -1078,34 +2037,25 @@
           ctx.rotate(p.angle);
           ctx.fillStyle = p.color;
           ctx.globalAlpha = Math.max(0, 1 - elapsed / MAX);
-          if (p.shape === 'rect') {
-            ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
-          } else {
-            ctx.beginPath();
-            ctx.arc(0, 0, p.r, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          if (p.shape === 'rect') ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+          else { ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2); ctx.fill(); }
           ctx.restore();
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.1;
-          p.angle += p.spin;
+          p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.angle += p.spin;
         });
         elapsed++;
-        if (elapsed < MAX) {
-          frame = requestAnimationFrame(draw);
-        } else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          cancelAnimationFrame(frame);
-        }
+        if (elapsed < MAX) frame = requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       cancelAnimationFrame(frame);
       elapsed = 0;
       draw();
     }
 
-    /* ── Init ──────────────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════
+       Init
+       ════════════════════════════════════════════════════════ */
     updateProgress();
+    acquireWakeLock();
   </script>
 </body>
 </html>
